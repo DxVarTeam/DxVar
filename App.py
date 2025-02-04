@@ -22,25 +22,6 @@ st.set_page_config(
     layout="centered"
 )
 
-# Get current theme (light/dark) using JavaScript
-st_theme = st_javascript("""
-    window.getComputedStyle(window.parent.document.getElementsByClassName("stApp")[0])
-    .getPropertyValue("color-scheme")
-""")
-
-# Set favicon based on detected theme
-if st_theme == "dark":
-    favicon_url = "https://github.com/DxVar/DxVar/blob/main/dxvarlogo%20copy.png"
-else:
-    favicon_url = "https://github.com/DxVar/DxVar/blob/main/dxvarlogo.png"
-
-# Inject dynamic favicon
-st.markdown(
-    f'<link rel="icon" href="{favicon_url}" type="image/png">',
-    unsafe_allow_html=True
-)
-
-st.write(f"Current Theme Mode: **{st_theme}**")  # Debugging output
 
 
 st.markdown("""

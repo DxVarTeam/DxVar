@@ -12,9 +12,6 @@ eutils_api_key = st.secrets["eutils_api_key"]
 client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
 
-# Set page configuration
-import streamlit as st
-from streamlit_javascript import st_javascript
 
 st.set_page_config(
     page_title="DxVar",

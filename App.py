@@ -19,7 +19,7 @@ st.set_page_config(
     layout="centered"
 )
 
-
+st.write(st.session_state.theme)
 
 st.markdown("""
     <style>

@@ -17,7 +17,7 @@ st.set_page_config(page_title="DxVar", layout="centered")
 
 st.set_page_config(
     page_title="DxVar",
-    page_icon="https://raw.githubusercontent.com/DxVar-1/app/main/dxvarlogo.png", 
+    page_icon="https://github.com/DxVar/DxVar/blob/main/dxvarlogo.png", 
     layout="centered"
 )
 

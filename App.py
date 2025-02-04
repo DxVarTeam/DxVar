@@ -79,7 +79,7 @@ initial_messages = [
     }
 ]
 
-file_url = 'https://github.com/DxVar/DxVar/blob/main/Clingen-Gene-Disease-Summary-2025-01-03.csv'
+file_url = 'https://github.com/DxVar/DxVar/blob/main/Clingen-Gene-Disease-Summary-2025-01-03.csv?raw=true'
 
 df = pd.read_csv(file_url)
 

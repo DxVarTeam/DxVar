@@ -13,11 +13,35 @@ client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
 
 # Set page configuration
+
 st.set_page_config(
     page_title="DxVar",
-    page_icon="https://github.com/DxVar/DxVar/blob/main/dxvarlogo.png", 
+    page_icon="https://github.com/DxVar/DxVar/blob/main/dxvarlogo.png",
     layout="centered"
 )
+
+# Inject JavaScript to change favicon based on theme
+favicon_script = """
+<script>
+function updateFavicon() {
+    var darkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var link = document.querySelector("link[rel~='icon']");
+    if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.head.appendChild(link);
+    }
+    link.href = darkMode 
+        ? "https://github.com/DxVar/DxVar/blob/main/dxvarlogo_white.png" 
+        : "https://github.com/DxVar/DxVar/blob/main/dxvarlogo.png";
+}
+updateFavicon();
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateFavicon);
+</script>
+"""
+
+# Inject JavaScript into Streamlit
+st.components.v1.html(favicon_script, height=0)
 
 st.markdown("""
     <style>

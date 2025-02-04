@@ -1,4 +1,4 @@
-from json.decoder import JSONDecodeError  # Import JSONDecodeError from json.decoder
+from json.decoder import JSONDecodeError
 import streamlit as st
 import requests
 from groq import Groq
@@ -9,7 +9,8 @@ import re
 parts = []
 formatted_alleles =[]
 eutils_api_key = st.secrets["eutils_api_key"]
-# Set page configuration
+client = Groq(api_key=st.secrets["GROQ_API_KEY"])
+
 
 # Set page configuration
 st.set_page_config(page_title="DxVar", layout="centered")
@@ -26,13 +27,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-
-
-
 st.title("DxVar")
-
-# Initialize Groq API client
-client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
 if "GeneBe_results" not in st.session_state:
     st.session_state.GeneBe_results = ['-','-','-','-','-','-','-','-']
@@ -48,8 +43,12 @@ if "reply" not in st.session_state:
     st.session_state.reply = ""
 if "selected_option" not in st.session_state:
     st.session_state.selected_option = None
-    
-# Define the initial system message
+
+#read gene-disease-curation file
+file_url = 'https://github.com/DxVar/DxVar/blob/main/Clingen-Gene-Disease-Summary-2025-01-03.csv?raw=true'
+df = pd.read_csv(file_url)
+
+# Define the initial system message for variant input formatting
 initial_messages = [
     {
         "role": "system",
@@ -79,26 +78,37 @@ initial_messages = [
     }
 ]
 
-file_url = 'https://github.com/DxVar/DxVar/blob/main/Clingen-Gene-Disease-Summary-2025-01-03.csv?raw=true'
-
-df = pd.read_csv(file_url)
-
 
 #ALL FUNCTIONS
+
+#ensures all 5 values are present for API call
+def get_variant_info(message):
+    try:
+        parts = message.split(',')
+        if len(parts) == 5 and parts[1].isdigit():
+            st.session_state.flag = True
+            return parts
+        else:
+            #st.write("Message does not match a variant format, please try again by entering a genetic variant.")
+            st.session_state.flag = False
+            return []
+    except Exception as e:
+        st.write(f"Error while parsing variant: {e}")
+        return []
+
+
+#get format chrX:123-A>B
 def convert_format(seq_id, position, deleted_sequence, inserted_sequence):
     # Extract chromosome number from seq_id (e.g., "NC_000022.11" -> 22)
     match = re.match(r"NC_000(\d+)\.\d+", seq_id)
-
     if match:
         chromosome = int(match.group(1))  # Extracts the chromosome number (e.g., '22')
-
-        # Return the desired format
         return f"chr{chromosome}:{position}-{deleted_sequence}>{inserted_sequence}"
     else:
         return "Invalid format"
-
+        
+#Converts a variant from 'chr#:position-ref>alt' format to '#,position,ref,alt,hg38'
 def convert_variant_format(variant: str) -> str:
-    """Converts a variant from 'chr#:position-ref>alt' format to '#,position,ref,alt,hg38'."""
     match = re.match(r'chr(\d+):([0-9]+)-([ACGT]+)>([ACGT]*)', variant)
     if match:
         chrom, position, ref, alt = match.groups()
@@ -108,7 +118,7 @@ def convert_variant_format(variant: str) -> str:
         st.write(variant)
         raise ValueError("Invalid variant format")
 
-
+#API call to e-utils
 def snp_to_vcf(snp_value):
     url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
     params = {
@@ -118,11 +128,8 @@ def snp_to_vcf(snp_value):
         "retmode": "text",
         "api_key": eutils_api_key
     }
-    
-    # Send the GET request
     response = requests.get(url, params=params)
     
-    # Check if the response is successful
     if response.status_code == 200:
         try:
             data = response.json()
@@ -136,41 +143,31 @@ def snp_to_vcf(snp_value):
     
         except JSONDecodeError as E:
             st.write ("Invalid rs value entered. Please try again.")
-
-    
     else:
-        # Handle any errors if the request fails
         st.write(f"Error: {response.status_code}, {response.text}")
         
 
-        # Function to find matching gene symbol and HGNC ID
+# Function to draw table matching gene symbol and HGNC ID
 def draw_gene_match_table(gene_symbol, hgnc_id):
-        # Check if the gene symbol and HGNC ID columns exist in the data
     if 'GENE SYMBOL' in df.columns and 'GENE ID (HGNC)' in df.columns:
-                # Filter rows matching the gene symbol and HGNC ID
         matching_rows = df[(df['GENE SYMBOL'] == gene_symbol) & (df['GENE ID (HGNC)'] == hgnc_id)]
         if not matching_rows.empty:
             selected_columns = matching_rows[['DISEASE LABEL', 'MOI', 'CLASSIFICATION', 'DISEASE ID (MONDO)']]
-            # Apply the styling function
             styled_table = selected_columns.style.apply(highlight_classification, axis=1)
-            # Display the table with scrolling
-            st.dataframe(styled_table, use_container_width=True)
+            st.dataframe(styled_table, use_container_width=True) #display table
 
-
+# Function to find matching gene symbol and HGNC ID from loaded dataset
 def find_gene_match(gene_symbol, hgnc_id):
-        # Check if the gene symbol and HGNC ID columns exist in the data
     if 'GENE SYMBOL' in df.columns and 'GENE ID (HGNC)' in df.columns:
-                # Filter rows matching the gene symbol and HGNC ID
         matching_rows = df[(df['GENE SYMBOL'] == gene_symbol) & (df['GENE ID (HGNC)'] == hgnc_id)]
         if not matching_rows.empty:
             st.session_state.disease_classification_dict = dict(zip(matching_rows['DISEASE LABEL'], matching_rows['CLASSIFICATION']))
         else:
-                    #st.write("No match found.")
-            #st.markdown("<p style='color:red;'>No match found.</p>", unsafe_allow_html=True)
             st.session_state.disease_classification_dict = "No disease found"
     else:
         st.write("No existing gene-disease match found")
 
+#colour profile for classifications
 def get_color(result):
     if result == "Pathogenic":
         return "red"
@@ -186,7 +183,7 @@ def get_color(result):
         return "black"  # Default color if no match
         
 
-# Function to highlight the rows based on classification with 65% transparency
+# Function to highlight the rows based on classification of diseases
 def highlight_classification(row):
     color_map = {
                 "Definitive": "color: rgba(66, 238, 66)",  # Green
@@ -201,12 +198,12 @@ def highlight_classification(row):
     return [color_map.get(classification, "")] * len(row)
 
 
-# Function to interact with Groq API for assistant responses
+# Function to interact with Groq API for assistant responses for intial variant input
 def get_assistant_response_initial(user_input):
     groq_messages = [{"role": "user", "content": user_input}]
     for message in initial_messages:
         groq_messages.insert(0, {"role": message["role"], "content": message["content"]})
-
+        
     completion = client.chat.completions.create(
         model="llama-3.3-70b-versatile",
         messages=groq_messages,
@@ -216,11 +213,9 @@ def get_assistant_response_initial(user_input):
         stream=False,
         stop=None,
     )
-
     return completion.choices[0].message.content
 
-# Function to interact with Groq API for assistant responses
-# Initialize the conversation history
+# instructions for getting info on diseases from found matches
 SYSTEM_1 = [
     {
         "role": "system",
@@ -231,6 +226,7 @@ SYSTEM_1 = [
     }
 ]
 
+# Initialize the conversation history
 SYSTEM = [
     {
         "role": "system",
@@ -247,12 +243,9 @@ SYSTEM = [
     }
 ]
 
-# Function to interact with Groq API for assistant responses
+# Function to interact with Groq API for info on matched diseases
 def get_assistant_response_1(user_input):
-    # Add user input to conversation history
     full_message = SYSTEM_1 + [{"role": "user", "content": user_input}]
-
-    # Send conversation history to API
     completion = client.chat.completions.create(
         model="llama-3.3-70b-versatile",
         messages=full_message,
@@ -272,7 +265,6 @@ def get_assistant_response(chat_history):
     # Combine system message with full chat history
     full_conversation = SYSTEM + chat_history  
 
-    # Send conversation history to API
     completion = client.chat.completions.create(
         model="llama-3.3-70b-versatile",
         messages=full_conversation,
@@ -289,19 +281,7 @@ def get_assistant_response(chat_history):
 ###################################################
 
 # Function to parse variant information
-def get_variant_info(message):
-    try:
-        parts = message.split(',')
-        if len(parts) == 5 and parts[1].isdigit():
-            st.session_state.flag = True
-            return parts
-        else:
-            #st.write("Message does not match a variant format, please try again by entering a genetic variant.")
-            st.session_state.flag = False
-            return []
-    except Exception as e:
-        st.write(f"Error while parsing variant: {e}")
-        return []
+
 
 # Main Streamlit interaction loop
 if "last_input" not in st.session_state:

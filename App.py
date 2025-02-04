@@ -13,8 +13,6 @@ client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
 
 # Set page configuration
-st.set_page_config(page_title="DxVar", layout="centered")
-
 st.set_page_config(
     page_title="DxVar",
     page_icon="https://github.com/DxVar/DxVar/blob/main/dxvarlogo.png", 

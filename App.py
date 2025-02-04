@@ -15,7 +15,7 @@ client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
 st.set_page_config(
     page_title="DxVar",
-    page_icon="https://github.com/DxVar/DxVar/blob/main/dxvarlogo.png",
+    page_icon="https://github.com/DxVar/DxVar/blob/main/dxvarlogo%20copy%202.ico",
     layout="centered"
 )
 
@@ -32,7 +32,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-logo_url = "https://github.com/DxVar/DxVar/blob/main/dxvarlogo%20copy%202.ico"
+logo_url = "https://github.com/DxVar/DxVar/blob/main/dxvarlogo.png""
 
 st.image(logo_url, width=300)
 

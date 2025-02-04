@@ -29,6 +29,7 @@ st.markdown("""
 
 st.title("DxVar")
 
+#initialize session state variables
 if "GeneBe_results" not in st.session_state:
     st.session_state.GeneBe_results = ['-','-','-','-','-','-','-','-']
 if "InterVar_results" not in st.session_state:
@@ -43,6 +44,8 @@ if "reply" not in st.session_state:
     st.session_state.reply = ""
 if "selected_option" not in st.session_state:
     st.session_state.selected_option = None
+if "last_input" not in st.session_state:
+    st.session_state.last_input = ""
 
 #read gene-disease-curation file
 file_url = 'https://github.com/DxVar/DxVar/blob/main/Clingen-Gene-Disease-Summary-2025-01-03.csv?raw=true'
@@ -278,14 +281,8 @@ def get_assistant_response(chat_history):
     assistant_reply = completion.choices[0].message.content
     return assistant_reply
 
-###################################################
 
-# Function to parse variant information
-
-
-# Main Streamlit interaction loop
-if "last_input" not in st.session_state:
-    st.session_state.last_input = ""
+# Main Streamlit interactions:
     
 user_input = st.text_input("Enter a genetic variant (ex: chr6:160585140-T>G or rs555607708):")
 option_box = ""
@@ -307,13 +304,10 @@ if user_input != st.session_state.last_input or st.session_state.rs_val_flag == 
             if len(formatted_alleles) == 1:
                 assistant_response = convert_variant_format(formatted_alleles[0])
                 
-        
-            
     # Parse the variant if present
     st.write(f"Assistant: {assistant_response}")
     parts = get_variant_info(assistant_response)
 
-    
     if st.session_state.flag == True and (st.session_state.rs_val_flag == False or option_box != st.session_state.selected_option):
         st.session_state.selected_option = option_box
         #ACMG
@@ -383,6 +377,7 @@ if user_input != st.session_state.last_input or st.session_state.rs_val_flag == 
         st.session_state.reply = get_assistant_response_1(user_input_1)
 
 
+#display all results
 if st.session_state.flag == True:
     result_color = get_color(st.session_state.GeneBe_results[0])
     st.markdown(f"### ACMG Results: <span style='color:{result_color}'>{st.session_state.GeneBe_results[0]}</span>", unsafe_allow_html=True)
@@ -391,12 +386,12 @@ if st.session_state.flag == True:
             "GeneBe Results": [st.session_state.GeneBe_results[0], st.session_state.GeneBe_results[1], st.session_state.GeneBe_results[2], st.session_state.GeneBe_results[3], st.session_state.GeneBe_results[4], st.session_state.GeneBe_results[5], st.session_state.GeneBe_results[6], st.session_state.GeneBe_results[7]],
             "InterVar Results": [st.session_state.InterVar_results[0], st.session_state.InterVar_results[1], st.session_state.InterVar_results[2], st.session_state.InterVar_results[3], '', '', '', ''],
                         }
-    # Create DataFrame from your dictionary
+    #display ACMG API results in table
     acmg_results = pd.DataFrame(data)
     acmg_results.set_index("Attribute", inplace=True)
-    # Display the styled table
     st.dataframe(acmg_results, use_container_width=True)
-    #st.write(acmg_results)
+
+    #display gene-disease link results in table
     st.write("### ClinGen Gene-Disease Results")
     draw_gene_match_table(st.session_state.GeneBe_results[2], 'HGNC:'+str(st.session_state.GeneBe_results[3]))
     st.markdown(
@@ -409,19 +404,17 @@ if st.session_state.flag == True:
                 )
 
 
-
-
-        #FINAL CHATBOT
+#Chatbot assistant
 if "messages" not in st.session_state:
     st.session_state["messages"] = []
         
-        # Display chat history
+# Display chat history
 for message in st.session_state["messages"]:
     with st.chat_message(message["role"]):
         st.write(message["content"])
         
 if chat_message := st.chat_input("I can help explain diseases!"):
-            # Append user message to chat history
+    # Append user message to chat history
     st.session_state["messages"].append({"role": "user", "content": chat_message})
             
     with st.chat_message("user"):
@@ -431,8 +424,7 @@ if chat_message := st.chat_input("I can help explain diseases!"):
         with st.spinner("Processing your query..."):
             response = get_assistant_response(st.session_state["messages"])  # Send full history
             st.write(response)
-        
-                    # Append assistant response to chat history
+            # Append assistant response to chat history
             st.session_state["messages"].append({"role": "assistant", "content": response})
                 
                 

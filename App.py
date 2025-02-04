@@ -13,6 +13,8 @@ client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
 
 # Set page configuration
+import streamlit as st
+from streamlit_javascript import st_javascript
 
 st.set_page_config(
     page_title="DxVar",
@@ -20,28 +22,26 @@ st.set_page_config(
     layout="centered"
 )
 
-# Inject JavaScript to change favicon based on theme
-favicon_script = """
-<script>
-function updateFavicon() {
-    var darkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    var link = document.querySelector("link[rel~='icon']");
-    if (!link) {
-        link = document.createElement('link');
-        link.rel = 'icon';
-        document.head.appendChild(link);
-    }
-    link.href = darkMode 
-        ? "https://github.com/DxVar/DxVar/blob/main/dxvarlogo_white.png" 
-        : "https://github.com/DxVar/DxVar/blob/main/dxvarlogo.png";
-}
-updateFavicon();
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateFavicon);
-</script>
-"""
+# Get current theme (light/dark) using JavaScript
+st_theme = st_javascript("""
+    window.getComputedStyle(window.parent.document.getElementsByClassName("stApp")[0])
+    .getPropertyValue("color-scheme")
+""")
 
-# Inject JavaScript into Streamlit
-st.components.v1.html(favicon_script, height=0)
+# Set favicon based on detected theme
+if st_theme == "dark":
+    favicon_url = "https://github.com/DxVar/DxVar/blob/main/dxvarlogo%20copy.png"
+else:
+    favicon_url = "https://github.com/DxVar/DxVar/blob/main/dxvarlogo.png"
+
+# Inject dynamic favicon
+st.markdown(
+    f'<link rel="icon" href="{favicon_url}" type="image/png">',
+    unsafe_allow_html=True
+)
+
+st.write(f"Current Theme Mode: **{st_theme}**")  # Debugging output
+
 
 st.markdown("""
     <style>

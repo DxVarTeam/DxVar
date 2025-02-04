@@ -32,8 +32,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-logo_url = "https://github.com/DxVar/DxVar/blob/main/dxvarlogo.png"
-
+logo_url = "https://raw.githubusercontent.com/DxVar-1/app/main/dxvarlogo.png"
 st.image(logo_url, width=300)
 
 #initialize session state variables

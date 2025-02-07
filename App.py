@@ -78,6 +78,7 @@ initial_messages = [
             "User input: tell me about rs12345. You respond: rs12345"
             "Always respond in the above format (ie: no space between the letters rs and the number. Example:)"
             "User input: rs 5689. You respond: rs5689"
+            "rs values can be single digit. Example: rs3 is valid."
             "if both rs and chromosome,position,ref base,alt base are given, give priority to the chromosome, position,ref base,alt base"
             "and only return that, however if any info is missing from chromosome,position,ref base,alt base, just use rs value and return rs"
             "Example: rs124234 chromosome:3, pos:13423. You reply: rs124234. since the ref base and alt base are missing"

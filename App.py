@@ -33,7 +33,8 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 logo_url = "https://raw.githubusercontent.com/DxVar-1/app/main/dxvarlogo.png"
-st.image(logo_url, width=300)
+#st.image(logo_url, width=300)
+st.title("DxVar")
 
 #initialize session state variables
 if "GeneBe_results" not in st.session_state:

@@ -4,6 +4,10 @@ import requests
 from groq import Groq
 import pandas as pd
 import re
+from arabic_support import support_arabic_text
+
+# Support Arabic text alignment in all components
+support_arabic_text(all=True)
 
 
 parts = []

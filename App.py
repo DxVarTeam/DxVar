@@ -37,7 +37,8 @@ def switch_theme(theme):
 
 # Sidebar toggle
 selected_theme = st.sidebar.radio("Select Theme:", ["Light", "Dark"])
-
+if st.button("Apply Theme"):
+    switch_theme(selected_theme)
 
 st.markdown("""
     <style>

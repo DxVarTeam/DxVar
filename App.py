@@ -180,12 +180,34 @@ def snp_to_vcf(snp_value):
 
 # Function to draw table matching gene symbol and HGNC ID
 def draw_gene_match_table(gene_symbol, hgnc_id):
+    # Define the custom classification order
+    classification_order = {
+        "Definitive": 1,
+        "Strong": 2,
+        "Moderate": 3,
+        "Limited": 4,
+        "Disputed": 5,
+        "Refuted": 6,
+        "No Known Disease Relationship": 7
+    }
+    
     if 'GENE SYMBOL' in df.columns and 'GENE ID (HGNC)' in df.columns:
         matching_rows = df[(df['GENE SYMBOL'] == gene_symbol) & (df['GENE ID (HGNC)'] == hgnc_id)]
         if not matching_rows.empty:
             selected_columns = matching_rows[['DISEASE LABEL', 'MOI', 'CLASSIFICATION', 'DISEASE ID (MONDO)']]
-            styled_table = selected_columns.style.apply(highlight_classification, axis=1)
-            st.dataframe(styled_table, use_container_width=True) #display table
+            
+            # Add a new column for the classification rank
+            selected_columns['Classification Rank'] = selected_columns['CLASSIFICATION'].map(classification_order)
+            
+            # Sort the table based on the custom rank
+            sorted_table = selected_columns.sort_values(by='Classification Rank', ascending=True)
+            
+            # Apply styling
+            styled_table = sorted_table.style.apply(highlight_classification, axis=1)
+            
+            # Display the sorted and styled table
+            st.dataframe(styled_table, use_container_width=True)  # display table
+
 
 # Function to find matching gene symbol and HGNC ID from loaded dataset
 def find_gene_match(gene_symbol, hgnc_id):

@@ -47,13 +47,18 @@ if language == "Arabic":
 
 st.sidebar.markdown(
     """
-    **Disclaimer:** DxVar is intended for research purposes only and may contain inaccuracies. It is not error-free and should not be relied upon for medical or diagnostic decisions. Users are advised to consult a qualified genetic counselor or healthcare professional for accurate interpretation of results.
+    **Disclaimer:** DxVar is intended for research purposes only and may contain inaccuracies. 
+    It is not error-free and should not be relied upon for medical or diagnostic decisions. 
+    Users are advised to consult a qualified genetic counselor or healthcare professional for 
+    accurate interpretation of results.
     """ if language == "English" else """
-    **تنويه:** هذه الأداة مخصصة للأغراض البحثية والتعليمية فقط. 
-    يرجى استشارة مختص طبي للحصول على المشورة الطبية.
-    """, 
+    **تنويه:** إن DxVar مخصص للأغراض البحثية فقط وقد يحتوي على أخطاء أو معلومات غير دقيقة. 
+    لا يمكن الاعتماد عليه لاتخاذ قرارات طبية أو تشخيصية. 
+    يُنصح المستخدمون باستشارة مستشار وراثي مؤهل أو مختص طبي للحصول على تفسير دقيق للنتائج.
+    """,
     unsafe_allow_html=True
 )
+
 
 #initialize session state variables
 if "GeneBe_results" not in st.session_state:

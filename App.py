@@ -19,7 +19,7 @@ st.set_page_config(
     layout="centered"
 )
 
-st.write(st.get_option("theme.base"))
+st.write(st.get_option("theme.primaryColor"))
 
 st.markdown("""
     <style>

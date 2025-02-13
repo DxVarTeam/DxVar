@@ -194,22 +194,22 @@ def draw_gene_match_table(gene_symbol, hgnc_id):
     if 'GENE SYMBOL' in df.columns and 'GENE ID (HGNC)' in df.columns:
         matching_rows = df[(df['GENE SYMBOL'] == gene_symbol) & (df['GENE ID (HGNC)'] == hgnc_id)]
         if not matching_rows.empty:
-            selected_columns = matching_rows[['DISEASE LABEL', 'MOI', 'CLASSIFICATION', 'DISEASE ID (MONDO)']]
+            selected_columns = matching_rows[['CLASSIFICATION', 'DISEASE LABEL', 'MOI', 'DISEASE ID (MONDO)']]  # Reorder columns
             
-            # Add a new column for the classification rank (for sorting, not displaying)
+            # Add a new column for the classification rank (for sorting only)
             selected_columns['Classification Rank'] = selected_columns['CLASSIFICATION'].map(classification_order)
             
             # Sort the table based on the custom rank
             sorted_table = selected_columns.sort_values(by='Classification Rank', ascending=True)
             
-            # Remove the 'Classification Rank' column from the table before displaying
+            # Remove the ranking column before displaying
             sorted_table = sorted_table.drop(columns=['Classification Rank'])
             
             # Apply styling
             styled_table = sorted_table.style.apply(highlight_classification, axis=1)
             
-            # Display the sorted and styled table
-            st.dataframe(styled_table, use_container_width=True)  # display table
+            # Display the sorted table without row numbers
+            st.dataframe(styled_table, use_container_width=True, hide_index=True)  # hide_index=True removes row numbers
 
 
 # Function to find matching gene symbol and HGNC ID from loaded dataset

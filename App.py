@@ -37,7 +37,7 @@ logo_url = "https://raw.githubusercontent.com/DxVar-1/app/main/dxvarlogo.png"
 st.title("DxVar")
 
 #Sidebar
-language = st.sidebar.radio("🌍 Select Language", ["English", "Arabic"])
+language = st.sidebar.radio("Select Language: ", ["English ", "Arabic "])
 # Store language preference in session state
 st.session_state["language"] = language
 
@@ -47,8 +47,7 @@ if language == "Arabic":
 
 st.sidebar.markdown(
     """
-    **Disclaimer:** This tool is for research and educational purposes only. 
-    Please consult a healthcare professional for medical advice.
+    **Disclaimer:** DxVar is intended for research purposes only and may contain inaccuracies. It is not error-free and should not be relied upon for medical or diagnostic decisions. Users are advised to consult a qualified genetic counselor or healthcare professional for accurate interpretation of results.
     """ if language == "English" else """
     **تنويه:** هذه الأداة مخصصة للأغراض البحثية والتعليمية فقط. 
     يرجى استشارة مختص طبي للحصول على المشورة الطبية.

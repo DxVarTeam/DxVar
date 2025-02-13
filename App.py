@@ -20,26 +20,6 @@ st.set_page_config(
 )
 
 
-def switch_theme(theme):
-    config_path = ".streamlit/config.toml"
-    new_config = f"""
-    [theme]
-    primaryColor = "#FF4B4B"
-    backgroundColor = {"#262730" if theme == "Dark" else "#FFFFFF"}
-    secondaryBackgroundColor = {"#33343A" if theme == "Dark" else "#F0F2F6"}
-    textColor = {"#FFFFFF" if theme == "Dark" else "#31333F"}
-    font = "sans serif"
-    """
-    with open(config_path, "w") as file:
-        file.write(new_config)
-
-    st.warning("Theme changed! Please restart the app.")
-
-# Sidebar toggle
-selected_theme = st.sidebar.radio("Select Theme:", ["Light", "Dark"])
-if st.button("Apply Theme"):
-    switch_theme(selected_theme)
-
 st.markdown("""
     <style>
         .justified-text {

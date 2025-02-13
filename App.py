@@ -196,11 +196,14 @@ def draw_gene_match_table(gene_symbol, hgnc_id):
         if not matching_rows.empty:
             selected_columns = matching_rows[['DISEASE LABEL', 'MOI', 'CLASSIFICATION', 'DISEASE ID (MONDO)']]
             
-            # Add a new column for the classification rank
+            # Add a new column for the classification rank (for sorting, not displaying)
             selected_columns['Classification Rank'] = selected_columns['CLASSIFICATION'].map(classification_order)
             
             # Sort the table based on the custom rank
             sorted_table = selected_columns.sort_values(by='Classification Rank', ascending=True)
+            
+            # Remove the 'Classification Rank' column from the table before displaying
+            sorted_table = sorted_table.drop(columns=['Classification Rank'])
             
             # Apply styling
             styled_table = sorted_table.style.apply(highlight_classification, axis=1)

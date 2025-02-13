@@ -19,6 +19,52 @@ st.set_page_config(
     layout="centered"
 )
 
+# Define theme settings
+light_theme = """
+    <style>
+        :root {
+            --primary-color: #FF4B4B;
+            --background-color: #FFFFFF;
+            --secondary-background-color: #F0F2F6;
+            --text-color: #31333F;
+        }
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+        .stApp {
+            background-color: var(--background-color);
+        }
+    </style>
+"""
+
+dark_theme = """
+    <style>
+        :root {
+            --primary-color: #FF4B4B;
+            --background-color: #262730;
+            --secondary-background-color: #33343A;
+            --text-color: #FFFFFF;
+        }
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+        .stApp {
+            background-color: var(--background-color);
+        }
+    </style>
+"""
+
+# Sidebar theme selector
+selected_theme = st.sidebar.radio("Select Theme:", ["Light", "Dark"], index=0)
+
+# Apply the selected theme
+if selected_theme == "Dark":
+    st.markdown(dark_theme, unsafe_allow_html=True)
+else:
+    st.markdown(light_theme, unsafe_allow_html=True)
+
 
 st.markdown("""
     <style>

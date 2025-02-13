@@ -41,7 +41,7 @@ language = st.sidebar.selectbox("🌍 Select Language", ["English", "Arabic"])
 # Store language preference in session state
 st.session_state["language"] = language
 
-disclaimer_placeholder.markdown(
+st.sidebar.markdown(
     """
     **Disclaimer:** This tool is for research and educational purposes only. 
     Please consult a healthcare professional for medical advice.

@@ -435,7 +435,7 @@ if chat_message := st.chat_input("I can help explain diseases!"):
             # Append assistant response to chat history
             st.session_state["messages"].append({"role": "assistant", "content": response})
                 
-st.markdown(
+st.sidebar.markdown(
     """
     **Disclaimer:** This tool is for research and educational purposes only. 
     Please consult a healthcare professional for medical advice.

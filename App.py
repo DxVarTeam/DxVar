@@ -42,7 +42,8 @@ language = st.sidebar.selectbox("🌍 Select Language", ["English", "Arabic"])
 st.session_state["language"] = language
 
 # Support Arabic text alignment in all components
-support_arabic_text(all=True)
+if language == "Arabic":
+    support_arabic_text(all=True)
 
 st.sidebar.markdown(
     """

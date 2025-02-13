@@ -6,10 +6,6 @@ import pandas as pd
 import re
 from arabic_support import support_arabic_text
 
-# Support Arabic text alignment in all components
-support_arabic_text(all=True)
-
-
 parts = []
 formatted_alleles =[]
 eutils_api_key = st.secrets["eutils_api_key"]
@@ -44,6 +40,9 @@ st.title("DxVar")
 language = st.sidebar.selectbox("🌍 Select Language", ["English", "Arabic"])
 # Store language preference in session state
 st.session_state["language"] = language
+
+# Support Arabic text alignment in all components
+support_arabic_text(all=True)
 
 st.sidebar.markdown(
     """

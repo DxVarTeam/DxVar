@@ -19,6 +19,7 @@ st.set_page_config(
     layout="centered"
 )
 
+st.write(st.get_option("theme.base"))
 
 st.markdown("""
     <style>

@@ -194,7 +194,7 @@ def draw_gene_match_table(gene_symbol, hgnc_id):
     if 'GENE SYMBOL' in df.columns and 'GENE ID (HGNC)' in df.columns:
         matching_rows = df[(df['GENE SYMBOL'] == gene_symbol) & (df['GENE ID (HGNC)'] == hgnc_id)]
         if not matching_rows.empty:
-            selected_columns = matching_rows[['CLASSIFICATION', 'DISEASE LABEL', 'MOI', 'DISEASE ID (MONDO)']]  # Reorder columns
+            selected_columns = matching_rows[['DISEASE LABEL', 'MOI', 'CLASSIFICATION', 'DISEASE ID (MONDO)']]  # Reorder columns
             
             # Add a new column for the classification rank (for sorting only)
             selected_columns['Classification Rank'] = selected_columns['CLASSIFICATION'].map(classification_order)

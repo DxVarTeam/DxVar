@@ -37,7 +37,7 @@ logo_url = "https://raw.githubusercontent.com/DxVar-1/app/main/dxvarlogo.png"
 st.title("DxVar")
 
 #Sidebar
-language = st.sidebar.selectbox("🌍 Select Language", ["English", "Arabic"])
+language = st.sidebar.radio("🌍 Select Language", ["English", "Arabic"])
 # Store language preference in session state
 st.session_state["language"] = language
 

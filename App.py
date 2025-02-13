@@ -36,6 +36,22 @@ logo_url = "https://raw.githubusercontent.com/DxVar-1/app/main/dxvarlogo.png"
 #st.image(logo_url, width=300)
 st.title("DxVar")
 
+#Sidebar
+language = st.sidebar.selectbox("🌍 Select Language", ["English", "Arabic"])
+# Store language preference in session state
+st.session_state["language"] = language
+
+disclaimer_placeholder.markdown(
+    """
+    **Disclaimer:** This tool is for research and educational purposes only. 
+    Please consult a healthcare professional for medical advice.
+    """ if language == "English" else """
+    **تنويه:** هذه الأداة مخصصة للأغراض البحثية والتعليمية فقط. 
+    يرجى استشارة مختص طبي للحصول على المشورة الطبية.
+    """, 
+    unsafe_allow_html=True
+)
+
 #initialize session state variables
 if "GeneBe_results" not in st.session_state:
     st.session_state.GeneBe_results = ['-','-','-','-','-','-','-','-']
@@ -435,10 +451,3 @@ if chat_message := st.chat_input("I can help explain diseases!"):
             # Append assistant response to chat history
             st.session_state["messages"].append({"role": "assistant", "content": response})
                 
-st.sidebar.markdown(
-    """
-    **Disclaimer:** This tool is for research and educational purposes only. 
-    Please consult a healthcare professional for medical advice.
-    """, 
-    unsafe_allow_html=True
-)

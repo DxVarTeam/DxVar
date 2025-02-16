@@ -315,7 +315,7 @@ if language == "Arabic":
 def get_assistant_response_1(user_input):
     full_message = SYSTEM_1 + [{"role": "user", "content": user_input}]
     completion = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+        model="qwen-2.5-32b",
         messages=full_message,
         temperature=1,
         max_completion_tokens=1024,
@@ -334,7 +334,7 @@ def get_assistant_response(chat_history):
     full_conversation = SYSTEM + chat_history  
 
     completion = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+        model="qwen-2.5-32b",
         messages=full_conversation,
         temperature=1,
         max_completion_tokens=1024,

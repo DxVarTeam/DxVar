@@ -31,7 +31,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-logo_url = "output-onlinepngtools.png"
+logo_url = "DxVar Logo.png"
 st.image(logo_url, width=300)
 #st.title("DxVar")
 

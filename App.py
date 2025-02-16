@@ -35,17 +35,6 @@ logo_url = "https://raw.githubusercontent.com/DxVar-1/app/main/dxvarlogo.png"
 st.image(logo_url, width=300)
 #st.title("DxVar")
 
-st.markdown(
-    """
-    <style>
-        div[data-baseweb="This is a test"] {
-            text-align: left !important; 
-            direction: ltr !important;
-        }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
 
 #Sidebar
 #st.sidebar.image("https://raw.githubusercontent.com/DxVar/DxVar/main/language.png", width=50)
@@ -357,6 +346,19 @@ def get_assistant_response(chat_history):
     assistant_reply = completion.choices[0].message.content
     return assistant_reply
 
+st.markdown(
+    """
+    <style>
+        /* Force text input field to be left-aligned */
+        div[data-testid="stTextInput"] input {
+            text-align: left !important;
+            direction: ltr !important;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 
 # Main Streamlit interactions:
 if language == "English":
@@ -364,6 +366,7 @@ if language == "English":
 else:
     user_input = st.text_input("أدخل متغيرًا جينيًا (مثال: chr6:160585140-T>G أو rs555607708):")
 option_box = ""
+
 
 if user_input != st.session_state.last_input or st.session_state.rs_val_flag == True:
     # Get assistant's response

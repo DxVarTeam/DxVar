@@ -5,6 +5,7 @@ from groq import Groq
 import pandas as pd
 import re
 from arabic_support import support_arabic_text
+from PIL import Image
 
 parts = []
 formatted_alleles =[]
@@ -12,10 +13,10 @@ eutils_api_key = st.secrets["eutils_api_key"]
 client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
 
-
+im = Image.open("favicon.ico")
 st.set_page_config(
     page_title="DxVar",
-    page_icon="https://github.com/DxVar/DxVar/blob/main/dxvarlogo%20copy%202.ico",
+    page_icon=im,
     layout="centered"
 )
 

@@ -13,7 +13,7 @@ eutils_api_key = st.secrets["eutils_api_key"]
 client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
 
-im = Image.open("favicon.ico")
+im = Image.open("dxvaricon.ico")
 st.set_page_config(
     page_title="DxVar",
     page_icon=im,

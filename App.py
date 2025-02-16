@@ -49,12 +49,24 @@ if language == "Arabic":
 st.sidebar.empty()
 st.sidebar.empty()
 st.sidebar.markdown(
-    """
+    f"""
+    <style>
+        .sidebar .sidebar-content {{
+            text-align: justify;
+            font-size: 14px;
+        }}
+    </style>
     **Disclaimer:** DxVar is intended for research purposes only and may contain inaccuracies. 
     It is not error-free and should not be relied upon for medical or diagnostic decisions. 
     Users are advised to consult a qualified genetic counselor or healthcare professional for 
     accurate interpretation of results.
     """ if language == "English" else """
+    <style>
+        .sidebar .sidebar-content {{
+            text-align: justify;
+            font-size: 14px;
+        }}
+    </style>
     **تنويه:** إن DxVar مخصص للأغراض البحثية فقط وقد يحتوي على أخطاء أو معلومات غير دقيقة. 
     لا يمكن الاعتماد عليه لاتخاذ قرارات طبية أو تشخيصية. 
     يُنصح المستخدمون باستشارة مستشار وراثي مؤهل أو مختص طبي للحصول على تفسير دقيق للنتائج.

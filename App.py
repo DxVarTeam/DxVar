@@ -37,7 +37,8 @@ st.image(logo_url, width=300)
 #st.title("DxVar")
 
 #Sidebar
-language = st.sidebar.selectbox("Select Language: ", ["English", "Arabic"])
+st.sidebar.image("https://cdn-icons-png.flaticon.com/512/732/732212.png", caption="Extensible Markup Language icons by Freepik - Flaticon")
+language = st.sidebar.selectbox("Language:", ["English", "Arabic"])
 # Store language preference in session state
 st.session_state["language"] = language
 

@@ -31,7 +31,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-logo_url = "https://raw.githubusercontent.com/DxVar-1/app/main/dxvarlogo.png"
+logo_url = "https://raw.githubusercontent.com/DxVar-1/app/main/output-onlinepngtools.png"
 st.image(logo_url, width=300)
 #st.title("DxVar")
 
@@ -45,9 +45,6 @@ st.session_state["language"] = language
 # Support Arabic text alignment in all components
 if language == "Arabic":
     support_arabic_text(all=True)
-
-st.sidebar.empty()
-
 
 
 st.sidebar.markdown(

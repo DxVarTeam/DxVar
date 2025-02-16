@@ -19,7 +19,6 @@ st.set_page_config(
     layout="centered"
 )
 
-
 st.markdown("""
     <style>
         .justified-text {
@@ -35,6 +34,18 @@ st.markdown("""
 logo_url = "https://raw.githubusercontent.com/DxVar-1/app/main/dxvarlogo.png"
 st.image(logo_url, width=300)
 #st.title("DxVar")
+
+st.markdown(
+    """
+    <style>
+        div[data-baseweb="This is a test"] {
+            text-align: left !important; 
+            direction: ltr !important;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
 #Sidebar
 #st.sidebar.image("https://raw.githubusercontent.com/DxVar/DxVar/main/language.png", width=50)

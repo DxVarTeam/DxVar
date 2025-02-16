@@ -472,25 +472,42 @@ if st.session_state.flag == True:
 
 
 #Chatbot assistant
-if "messages" not in st.session_state:
-    st.session_state["messages"] = []
-        
+
+
+
+# Add CSS to align chat icons based on language
+if language == "Arabic":
+    st.markdown(
+        """
+        <style>
+            .chat-message {
+                text-align: right;
+            }
+            .chat-message .streamlit-icon {
+                float: right;
+            }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
 # Display chat history
 for message in st.session_state["messages"]:
     with st.chat_message(message["role"]):
         st.write(message["content"])
-        
+
+# Handle chat input
 if chat_message := st.chat_input("I can help explain diseases!"):
     # Append user message to chat history
     st.session_state["messages"].append({"role": "user", "content": chat_message})
-            
+
     with st.chat_message("user"):
         st.write(chat_message)
-        
+
     with st.chat_message("assistant"):
         with st.spinner("Processing your query..."):
             response = get_assistant_response(st.session_state["messages"])  # Send full history
             st.write(response)
             # Append assistant response to chat history
             st.session_state["messages"].append({"role": "assistant", "content": response})
-                
+

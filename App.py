@@ -37,7 +37,7 @@ st.image(logo_url, width=300)
 #st.title("DxVar")
 
 #Sidebar
-st.sidebar.image("https://raw.githubusercontent.com/DxVar/DxVar/main/language.png", width=50)
+#st.sidebar.image("https://raw.githubusercontent.com/DxVar/DxVar/main/language.png", width=50)
 language = st.sidebar.selectbox("Language:",["English", "Arabic"])
 # Store language preference in session state
 st.session_state["language"] = language
@@ -46,6 +46,8 @@ st.session_state["language"] = language
 if language == "Arabic":
     support_arabic_text(all=True)
 
+st.sidebar.empty()
+st.sidebar.empty()
 st.sidebar.markdown(
     """
     **Disclaimer:** DxVar is intended for research purposes only and may contain inaccuracies. 

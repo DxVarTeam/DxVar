@@ -37,7 +37,7 @@ st.image(logo_url, width=300)
 #st.title("DxVar")
 
 #Sidebar
-st.sidebar.image("href="https://www.flaticon.com/free-icons/extensible-markup-language")
+st.sidebar.image("")
 language = st.sidebar.selectbox("Language:", ["English", "Arabic"])
 # Store language preference in session state
 st.session_state["language"] = language

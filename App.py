@@ -37,7 +37,7 @@ st.image(logo_url, width=300)
 #st.title("DxVar")
 
 #Sidebar
-st.sidebar.image("https://github.com/DxVar/DxVar/blob/main/language.png")
+st.sidebar.image("https://github.com/DxVar/DxVar/blob/main/language.png", width = 20)
 language = st.sidebar.selectbox("Language:", ["English", "Arabic"])
 # Store language preference in session state
 st.session_state["language"] = language

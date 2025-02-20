@@ -9,6 +9,7 @@ from PIL import Image
 
 parts = []
 formatted_alleles =[]
+eutils_data = []
 eutils_api_key = st.secrets["eutils_api_key"]
 client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
@@ -174,8 +175,8 @@ def snp_to_vcf(snp_value):
     
     if response.status_code == 200:
         try:
-            data = response.json()
-            filtered_data = data["primary_snapshot_data"]["placements_with_allele"][0]["alleles"]
+            eutils_data = response.json()
+            filtered_data = eutils_data["primary_snapshot_data"]["placements_with_allele"][0]["alleles"]
     
             for allele in filtered_data[1:]:
                 vcf_format = allele["allele"]["spdi"]
@@ -187,7 +188,20 @@ def snp_to_vcf(snp_value):
             st.write ("Invalid rs value entered. Please try again.")
     else:
         st.write(f"Error: {response.status_code}, {response.text}")
-        
+
+def find_mRNA():
+    for placement in eutils_data["primary_snapshot_data"]["placements_with_allele"]:
+      if "refseq_mrna" in placement["placement_annot"]["seq_type"]:
+        return placement["alleles"][1]["hgvs"]
+
+def find_gene_name():
+    genes = eutils_data["primary_snapshot_data"]["allele_annotations"][0]["assembly_annotation"][0]["genes"][0]
+    return genes["locus"]
+
+def find_prot():
+    for placement in eutils_data["primary_snapshot_data"]["placements_with_allele"]:
+      if "refseq_prot" in placement["placement_annot"]["seq_type"]:
+        return placement["alleles"][1]["hgvs"]
 
 # Function to draw table matching gene symbol and HGNC ID
 def draw_gene_match_table(gene_symbol, hgnc_id):
@@ -386,6 +400,7 @@ if user_input != st.session_state.last_input or st.session_state.rs_val_flag == 
                 
     # Parse the variant if present
     st.write(f"Assistant: {assistant_response}")
+    st.write(f"hgvs: {find_gene_name()}({find_mRNA()}), {find_prot()}")
     parts = get_variant_info(assistant_response)
 
     if st.session_state.flag == True and (st.session_state.rs_val_flag == False or option_box != st.session_state.selected_option):

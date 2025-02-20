@@ -479,7 +479,8 @@ if user_input != st.session_state.last_input or st.session_state.rs_val_flag == 
         if st.session_state.rs_flag:
             st.write(f"hgvs: {find_gene_name()}({find_mRNA()}), {find_prot()}")
         else:
-            snp_to_vcf(st.session_state.GeneBe_results[4])
+            snp_id = st.session_state.GeneBe_results[4]
+            snp_to_vcf(snp_id)
             st.write(f"hgvs: {find_gene_name()}({find_mRNA()}), {find_prot()}")
 
 

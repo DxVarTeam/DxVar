@@ -117,7 +117,7 @@ initial_messages = [
 ]
 
 if language == "Arabic":
-    initial_messages[0]["content"] += " Note: The user has selected the Arabic language, please reply and communicate in Arabic."
+    initial_messages[0]["content"] += " Note: The user has selected the Arabic language, please reply and communicate in Arabic. using Arabic script only unless english is necessary such as for the variant you may write it in enlgish using english letters and numbers otherwise use arabic script only."
 
 
 
@@ -285,7 +285,7 @@ SYSTEM_1 = [
 ]
 
 if language == "Arabic":
-    SYSTEM_1[0]["content"] += " Note: The user has selected the Arabic language, please reply and communicate in Arabic unless instructed otherwise."
+    SYSTEM_1[0]["content"] += " Note: The user has selected the Arabic language, please reply and communicate in Arabic and with Arabic script/letters only unless instructed otherwise."
     
 
 # Initialize the conversation history
@@ -306,7 +306,7 @@ SYSTEM = [
     ]
 
 if language == "Arabic":
-    SYSTEM[0]["content"] += " Note: The user has selected the Arabic language, please reply and communicate in Arabic unless instructed otherwise."
+    SYSTEM[0]["content"] += " Note: The user has selected the Arabic language, please reply and communicate in Arabic and with Arabic script/letters only unless instructed otherwise."
     
 
 # Function to interact with Groq API for info on matched diseases

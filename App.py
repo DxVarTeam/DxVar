@@ -73,8 +73,10 @@ if "disease_classification_dict" not in st.session_state:
     st.session_state.disease_classification_dict = {"No diseases found"}
 if "flag" not in st.session_state:
     st.session_state.flag = False
-if "rs_val_flag" not in st.session_state:
+if "rs_val_flag" not in st.session_state:#if rs has multiple alleles
     st.session_state.rs_val_flag = False
+if "rs_flag" not in st.session_state:
+    st.session_state.rs_flag = False
 if "reply" not in st.session_state:
     st.session_state.reply = ""
 if "selected_option" not in st.session_state:
@@ -392,6 +394,7 @@ if user_input != st.session_state.last_input or st.session_state.rs_val_flag == 
     assistant_response = get_assistant_response_initial(user_input)
     
     if assistant_response.lower().startswith("rs"):
+        st.session_state.rs_flag = True
         snp_id = assistant_response.split()[0]
         snp_to_vcf(snp_id)
         if len(formatted_alleles) > 1:
@@ -402,11 +405,11 @@ if user_input != st.session_state.last_input or st.session_state.rs_val_flag == 
             st.session_state.rs_val_flag = False
             if len(formatted_alleles) == 1:
                 assistant_response = convert_variant_format(formatted_alleles[0])
-                
+    else:
+        st.session_state.rs_flag = False
+    
     # Parse the variant if present
     st.write(f"Assistant: {assistant_response}")
-    if assistant_response.lower().startswith("rs"):
-        st.write(f"hgvs: {find_gene_name()}({find_mRNA()}), {find_prot()}")
     parts = get_variant_info(assistant_response)
 
     if st.session_state.flag == True and (st.session_state.rs_val_flag == False or option_box != st.session_state.selected_option):
@@ -473,6 +476,14 @@ if user_input != st.session_state.last_input or st.session_state.rs_val_flag == 
                 st.session_state.InterVar_results = ['-','','-','']
                 pass
 
+        if st.session_state.rs_flag:
+            st.write(f"hgvs: {find_gene_name()}({find_mRNA()}), {find_prot()}")
+        else:
+            snp_to_vcf(st.session_state.GeneBe_results[4])
+            st.write(f"hgvs: {find_gene_name()}({find_mRNA()}), {find_prot()}")
+
+
+        
         find_gene_match(st.session_state.GeneBe_results[2], 'HGNC:'+str(st.session_state.GeneBe_results[3]))
         user_input_1 = f"The following diseases were found to be linked to the gene in interest: {st.session_state.disease_classification_dict}. Explain these diseases in depth, announce if a disease has been refuted, no need to explain that disease.if no diseases found reply with: No linked diseases found "
         st.session_state.reply = get_assistant_response_1(user_input_1)

@@ -405,7 +405,7 @@ if user_input != st.session_state.last_input or st.session_state.rs_val_flag == 
                 
     # Parse the variant if present
     st.write(f"Assistant: {assistant_response}")
-    if st.session_state.rs_val_flag:
+    if assistant_response.lower().startswith("rs"):
         st.write(f"hgvs: {find_gene_name()}({find_mRNA()}), {find_prot()}")
     parts = get_variant_info(assistant_response)
 

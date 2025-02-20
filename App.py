@@ -405,7 +405,8 @@ if user_input != st.session_state.last_input or st.session_state.rs_val_flag == 
                 
     # Parse the variant if present
     st.write(f"Assistant: {assistant_response}")
-    st.write(f"hgvs: {find_gene_name()}({find_mRNA()}), {find_prot()}")
+    if st.session_state.rs_val_flag:
+        st.write(f"hgvs: {find_gene_name()}({find_mRNA()}), {find_prot()}")
     parts = get_variant_info(assistant_response)
 
     if st.session_state.flag == True and (st.session_state.rs_val_flag == False or option_box != st.session_state.selected_option):

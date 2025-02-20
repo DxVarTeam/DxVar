@@ -9,7 +9,7 @@ from PIL import Image
 
 parts = []
 formatted_alleles =[]
-eutils_data = []
+eutils_data = {}
 eutils_api_key = st.secrets["eutils_api_key"]
 client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 

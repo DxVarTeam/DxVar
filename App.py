@@ -315,9 +315,9 @@ def get_assistant_response_1(user_input):
     completion = client.chat.completions.create(
         model="llama-3.3-70b-versatile",
         messages=full_message,
-        temperature=1,
+        temperature=0.5,
         max_completion_tokens=1024,
-        top_p=1,
+        top_p=0.8,
         stream=False,
         stop=None,
     )

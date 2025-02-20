@@ -163,6 +163,8 @@ def convert_variant_format(variant: str) -> str:
 
 #API call to e-utils
 def snp_to_vcf(snp_value):
+    global eutils_data
+    
     url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
     params = {
         "db": "snp",
@@ -190,15 +192,18 @@ def snp_to_vcf(snp_value):
         st.write(f"Error: {response.status_code}, {response.text}")
 
 def find_mRNA():
+    global eutils_data
     for placement in eutils_data["primary_snapshot_data"]["placements_with_allele"]:
       if "refseq_mrna" in placement["placement_annot"]["seq_type"]:
         return placement["alleles"][1]["hgvs"]
 
 def find_gene_name():
+    global eutils_data
     genes = eutils_data["primary_snapshot_data"]["allele_annotations"][0]["assembly_annotation"][0]["genes"][0]
     return genes["locus"]
 
 def find_prot():
+    global eutils_data
     for placement in eutils_data["primary_snapshot_data"]["placements_with_allele"]:
       if "refseq_prot" in placement["placement_annot"]["seq_type"]:
         return placement["alleles"][1]["hgvs"]

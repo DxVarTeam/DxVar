@@ -476,7 +476,7 @@ if user_input != st.session_state.last_input or st.session_state.rs_val_flag == 
                 st.session_state.InterVar_results = ['-','','-','']
                 pass
 
-        if (!(st.session_state.rs_flag)):
+        if (st.session_state.rs_flag == False):
             snp_id = st.session_state.GeneBe_results[4]
             snp_to_vcf(snp_id)
 

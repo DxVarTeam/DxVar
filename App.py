@@ -476,12 +476,9 @@ if user_input != st.session_state.last_input or st.session_state.rs_val_flag == 
                 st.session_state.InterVar_results = ['-','','-','']
                 pass
 
-        if st.session_state.rs_flag:
-            st.write(f"hgvs: {find_gene_name()}({find_mRNA()}), {find_prot()}")
-        else:
+        if (!(st.session_state.rs_flag)):
             snp_id = st.session_state.GeneBe_results[4]
             snp_to_vcf(snp_id)
-            st.write(f"hgvs: {find_gene_name()}({find_mRNA()}), {find_prot()}")
 
 
         
@@ -492,6 +489,7 @@ if user_input != st.session_state.last_input or st.session_state.rs_val_flag == 
 
 #display all results
 if st.session_state.flag == True:
+    st.write(f"hgvs: {find_gene_name()}{find_mRNA()}, {find_prot()}")
     result_color = get_color(st.session_state.GeneBe_results[0])
     st.markdown(f"### ACMG Results: <span style='color:{result_color}'>{st.session_state.GeneBe_results[0]}</span>", unsafe_allow_html=True)
     data = {

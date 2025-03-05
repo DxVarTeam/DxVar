@@ -83,6 +83,8 @@ if "selected_option" not in st.session_state:
     st.session_state.selected_option = None
 if "last_input" not in st.session_state:
     st.session_state.last_input = ""
+if "hgvs_val" not in st.session_state:
+    st.session_state.hgvs_val = ""
 
 #read gene-disease-curation file
 file_url = 'https://github.com/DxVar/DxVar/blob/main/Clingen-Gene-Disease-Summary-2025-01-03.csv?raw=true'
@@ -479,8 +481,8 @@ if user_input != st.session_state.last_input or st.session_state.rs_val_flag == 
         if (st.session_state.rs_flag == False):
             snp_id = st.session_state.GeneBe_results[4]
             snp_to_vcf(snp_id)
-
-
+        
+        st.session_state.hgvs_val = "hgvs: {find_gene_name()}{find_mRNA()}, {find_prot()}"
         
         find_gene_match(st.session_state.GeneBe_results[2], 'HGNC:'+str(st.session_state.GeneBe_results[3]))
         user_input_1 = f"The following diseases were found to be linked to the gene in interest: {st.session_state.disease_classification_dict}. Explain these diseases in depth, announce if a disease has been refuted, no need to explain that disease.if no diseases found reply with: No linked diseases found "
@@ -489,7 +491,7 @@ if user_input != st.session_state.last_input or st.session_state.rs_val_flag == 
 
 #display all results
 if st.session_state.flag == True:
-    st.write(f"hgvs: {find_gene_name()}{find_mRNA()}, {find_prot()}")
+    st.write(st.session_state.hgvs_val)
     result_color = get_color(st.session_state.GeneBe_results[0])
     st.markdown(f"### ACMG Results: <span style='color:{result_color}'>{st.session_state.GeneBe_results[0]}</span>", unsafe_allow_html=True)
     data = {

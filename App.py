@@ -572,8 +572,8 @@ if (user_input != st.session_state.last_input or user_input_ph != st.session_sta
         Briefly explain these diseases, announce if a disease has been refuted, no need to explain that disease.if no diseases found reply with: No linked diseases found based on the ClinGen Gene-Disease database. 
         The following papers were found to be linked with the requested variant the and phenotype (disease) in interest ({st.session_state.last_input_ph}): {filtered_papers}. 
         Analyze the abstracts of the papers then explain and draw a conclusion on if the variant is likely to cause the mentioned disease or not.
-        Whenever providing conclusions mention which papers were used to draw those conclusions by referencing their doi, but do not mention the papers within the text, just reference them using IEEE style like [1]
-        Then at the end of your reply write all the references with their doi separated by commas for example [1] 10.1186/s12920-024-02024-0, [2] 10.1038/s41598-019-50891-w ... and so on"""
+        Whenever providing conclusions or insights, mention which papers were used to draw those conclusions by referencing them using IEEE style like [1].
+        ensure this is done based on the order of the provided papers. Example if 8 papers were used and papers 2 and 5 were referenced write [2][5]"""
         
         st.session_state.reply = get_assistant_response_1(user_input_1)
 
@@ -611,7 +611,8 @@ if st.session_state.flag == True:
             papers_df = papers_df[display_columns]
         
         # Display the DataFrame as a table
-        st.dataframe(papers_df, use_container_width=True, hide_index=True)
+        #st.dataframe(papers_df, use_container_width=True, hide_index=True)
+        st.dataframe(papers_df, use_container_width=True)
     
     st.write("### AI Summary")
     st.markdown(

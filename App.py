@@ -17,6 +17,7 @@ eutils_data = {}
 eutils_api_key = st.secrets["eutils_api_key"]
 client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 paper_count = 0
+chunk_size = 200
 
 
 im = Image.open("dxvaricon.ico")
@@ -136,13 +137,34 @@ if language == "Arabic":
 
 
 #ALL FUNCTIONS
+#def scrape_papers():
+ # pmid_query = [st.session_state.pmids, [st.session_state.last_input_ph]]  # Replace with your actual PMID
+  #output_filepath = "paper.jsonl"
+  #get_and_dump_pubmed_papers(pmid_query, output_filepath='papers.jsonl')
+  #with open('papers.jsonl', "r", encoding="utf-8") as file:
+   # for line in file:
+    #  st.session_state.papers.append(json.loads(line.strip()))  # Convert each line from JSONL format to a dictionary
+
 def scrape_papers():
-  pmid_query = [st.session_state.pmids, [st.session_state.last_input_ph]]  # Replace with your actual PMID
-  output_filepath = "paper.jsonl"
-  get_and_dump_pubmed_papers(pmid_query, output_filepath='papers.jsonl')
-  with open('papers.jsonl', "r", encoding="utf-8") as file:
-    for line in file:
-      st.session_state.papers.append(json.loads(line.strip()))  # Convert each line from JSONL format to a dictionary
+    # Clear the output file at the start
+    open(output_filepath, "w").close()  
+
+    for i in range(0, len(st.session_state.pmids), chunk_size):
+        chunk = pmids[i:i+chunk_size]
+        chunk_query = [chunk, [st.session_state.last_input_ph]]
+        get_and_dump_pubmed_papers(chunk_query, output_filepath=temp_filepath)
+
+        # Read temp file and append to output file
+        with open(temp_filepath, "r", encoding="utf-8") as infile, open(output_filepath, "a", encoding="utf-8") as outfile:
+            outfile.write(infile.read())
+
+        # Load into session state
+        with open(temp_filepath, "r", encoding="utf-8") as file:
+            for line in file:
+                st.session_state.papers.append(json.loads(line.strip()))
+
+    if os.path.exists(temp_filepath):
+        os.remove(temp_filepath)
 
 
 def get_pmids(rs_id):

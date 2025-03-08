@@ -8,6 +8,8 @@ from arabic_support import support_arabic_text
 from PIL import Image
 import urllib.parse
 from paperscraper.pubmed import get_and_dump_pubmed_papers
+import json
+
 
 parts = []
 formatted_alleles =[]

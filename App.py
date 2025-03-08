@@ -6,12 +6,14 @@ import pandas as pd
 import re
 from arabic_support import support_arabic_text
 from PIL import Image
+import urllib.parse
 
 parts = []
 formatted_alleles =[]
 eutils_data = {}
 eutils_api_key = st.secrets["eutils_api_key"]
 client = Groq(api_key=st.secrets["GROQ_API_KEY"])
+paper_count = 0
 
 
 im = Image.open("dxvaricon.ico")
@@ -129,6 +131,26 @@ if language == "Arabic":
 
 
 #ALL FUNCTIONS
+
+def get_pmids(rs_id):
+    # Encode the variant ID properly
+    encoded_variant_id = urllib.parse.quote(f"litvar@{rs_id}##")
+    
+    url = f"https://www.ncbi.nlm.nih.gov/research/litvar2-api/variant/get/{encoded_variant_id}/publications?format=json"
+    response = requests.get(url)
+    
+    # Check if request was successful
+    if response.status_code == 200:
+        try:
+            data = response.json()
+             st.session_state.pmids = data
+            return data.get("pmids_count")
+        except ValueError:
+            raise ValueError("Failed to parse JSON response from LitVar2 API")
+    else:
+        print(f"Error: {response.status_code}")
+        return None
+        
 
 #ensures all 5 values are present for API call
 def get_variant_info(message):
@@ -493,6 +515,7 @@ if (user_input != st.session_state.last_input or user_input_ph != st.session_sta
             snp_to_vcf(snp_id)
         
         st.session_state.hgvs_val = f"hgvs: {find_gene_name()}{find_mRNA()}, {find_prot()}"
+        paper_count = get_pmids(st.session_state.GeneBe_results[4])
         
         find_gene_match(st.session_state.GeneBe_results[2], 'HGNC:'+str(st.session_state.GeneBe_results[3]))
         user_input_1 = f"The following diseases were found to be linked to the gene in interest: {st.session_state.disease_classification_dict}. Explain these diseases in depth, announce if a disease has been refuted, no need to explain that disease.if no diseases found reply with: No linked diseases found "
@@ -517,6 +540,10 @@ if st.session_state.flag == True:
     #display gene-disease link results in table
     st.write("### ClinGen Gene-Disease Results")
     draw_gene_match_table(st.session_state.GeneBe_results[2], 'HGNC:'+str(st.session_state.GeneBe_results[3]))
+    st.write("### Research Papers")
+    st.write(f"{paper_count} Research papers were found relaated to the entered variant.")
+    
+    st.write("### AI Summary")
     st.markdown(
                     f"""
                     <div class="justified-text">
@@ -525,6 +552,7 @@ if st.session_state.flag == True:
                      """,
                      unsafe_allow_html=True,
                 )
+    
 
 
 #Chatbot assistant

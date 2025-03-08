@@ -583,13 +583,22 @@ if st.session_state.flag == True:
     st.write("### ClinGen Gene-Disease Results")
     draw_gene_match_table(st.session_state.GeneBe_results[2], 'HGNC:'+str(st.session_state.GeneBe_results[3]))
     st.write("### Research Papers")
-    st.write(f"{paper_count} Research papers were found related to the entered variant.")
+    st.write(f"")
     if(st.session_state.last_input_ph == ""):
-        st.write("Please enter a phenotype to further search these papers.")
+        st.success(f"{paper_count} Research papers were found related to the entered variant. Please enter a phenotype to further search these papers.")
     else:
-        st.write(f"{len(st.session_state.papers)} of thm mention the phenotype:{st.session_state.last_input_ph}")
-        for paper in st.session_state.papers:
-            st.write(paper["title"])
+        st.success(f"{paper_count} Research papers were found related to the entered variant. {len(st.session_state.papers)} of them mention the phenotype: {st.session_state.last_input_ph}")
+        papers_df = pd.DataFrame(st.session_state.papers)
+    
+        # If the DataFrame has many columns, you might want to select specific ones
+        # For example:
+        # display_columns = ['title', 'authors', 'journal', 'publication_date', 'abstract', 'pmid']
+        # if all(col in papers_df.columns for col in display_columns):
+        #     papers_df = papers_df[display_columns]
+        
+        # Display the DataFrame as a table
+        st.subheader(f"{len(st.session_state.papers)} papers found")
+        st.dataframe(papers_df, use_container_width=True, hide_index=True
     
     st.write("### AI Summary")
     st.markdown(

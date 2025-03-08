@@ -367,7 +367,7 @@ SYSTEM_1 = [
         "role": "system",
         "content": (
             "You are a clinician assistant chatbot specializing in genomic research and variant analysis. "
-            "Your task is to interpret user-provided genetic variant data, identify possible Mendelian diseases linked to genes."
+            "Your task is to interpret user-provided genetic variant data, and identify possible Mendelian diseases linked to genes if provided with research paper articles."
         ),
     }
 ]
@@ -559,9 +559,20 @@ if (user_input != st.session_state.last_input or user_input_ph != st.session_sta
         paper_count = get_pmids(st.session_state.GeneBe_results[4])
         if(st.session_state.last_input_ph != ""):
             scrape_papers()
+
+        #drop authors as not needed for AI model 
+        papers_copy = copy.deepcopy(st.session_state.papers)
+        columns_to_remove = ["authors"]
+        filtered_papers = [{k: v for k, v in paper.items() if k not in columns_to_remove} for paper in papers_copy]
+
         
         find_gene_match(st.session_state.GeneBe_results[2], 'HGNC:'+str(st.session_state.GeneBe_results[3]))
-        user_input_1 = f"The following diseases were found to be linked to the gene in interest: {st.session_state.disease_classification_dict}. Explain these diseases in depth, announce if a disease has been refuted, no need to explain that disease.if no diseases found reply with: No linked diseases found "
+        user_input_1 = f"The following diseases were found to be linked to the gene in interest: {st.session_state.disease_classification_dict}. 
+        Explain these diseases concisely, announce if a disease has been refuted, no need to explain that disease.if no diseases found reply with: No linked diseases found. 
+        The following papers were found to be linked with the requested variant the and phenotype in interest ({st.session_state.last_input_ph}): {filtered_papers}. 
+        Analyse the abstracts of the papers and draw a conclusion on if the variant is likely to cause the mentioned disease (phenotype) or not.
+        Whenever providing conclusions mention which papers were used to draw those conclusions by referencing their doi"
+        
         st.session_state.reply = get_assistant_response_1(user_input_1)
 
 

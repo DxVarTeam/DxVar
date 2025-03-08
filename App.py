@@ -9,6 +9,7 @@ from PIL import Image
 import urllib.parse
 from paperscraper.pubmed import get_and_dump_pubmed_papers
 import json
+import os
 
 
 parts = []

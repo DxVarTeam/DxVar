@@ -529,7 +529,8 @@ if (user_input != st.session_state.last_input or user_input_ph != st.session_sta
         
         st.session_state.hgvs_val = f"hgvs: {find_gene_name()}{find_mRNA()}, {find_prot()}"
         paper_count = get_pmids(st.session_state.GeneBe_results[4])
-        scrape_papers()
+        if(st.session_state.last_input_ph != ""):
+            scrape_papers()
         
         find_gene_match(st.session_state.GeneBe_results[2], 'HGNC:'+str(st.session_state.GeneBe_results[3]))
         user_input_1 = f"The following diseases were found to be linked to the gene in interest: {st.session_state.disease_classification_dict}. Explain these diseases in depth, announce if a disease has been refuted, no need to explain that disease.if no diseases found reply with: No linked diseases found "

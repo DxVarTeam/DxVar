@@ -137,7 +137,7 @@ if language == "Arabic":
 def scrape_papers():
   pmid_query = [st.session_state.pmids, [st.session_state.last_input_ph]]  # Replace with your actual PMID
   output_filepath = "paper.jsonl"
-  get_and_dump_pubmed_papers(pmid_query, output_filepath='papers.json')
+  get_and_dump_pubmed_papers(pmid_query, output_filepath='papers.jsonl')
   with open('papers.json', "r", encoding="utf-8") as file:
     for line in file:
       st.session_state.papers.append(json.loads(line.strip()))  # Convert each line from JSONL format to a dictionary

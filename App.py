@@ -7,6 +7,7 @@ import re
 from arabic_support import support_arabic_text
 from PIL import Image
 import urllib.parse
+from paperscraper.pubmed import get_and_dump_pubmed_papers
 
 parts = []
 formatted_alleles =[]
@@ -89,6 +90,8 @@ if "last_input_ph" not in st.session_state:
     st.session_state.last_input_ph = ""
 if "hgvs_val" not in st.session_state:
     st.session_state.hgvs_val = ""
+if "papers" not in st.session_state:
+    st.session_state.papers = []
 
 #read gene-disease-curation file
 file_url = 'https://github.com/DxVar/DxVar/blob/main/Clingen-Gene-Disease-Summary-2025-01-03.csv?raw=true'
@@ -131,6 +134,14 @@ if language == "Arabic":
 
 
 #ALL FUNCTIONS
+def get_and_dump_pubmed_papers():
+  pmid_query = [pmids, [st.session_state.last_input_ph]]  # Replace with your actual PMID
+  output_filepath = "paper.jsonl"
+  get_and_dump_pubmed_papers(pmid_query, output_filepath='papers.json')
+  with open('papers.json', "r", encoding="utf-8") as file:
+    for line in file:
+      st.session_state.papers.append(json.loads(line.strip()))  # Convert each line from JSONL format to a dictionary
+
 
 def get_pmids(rs_id):
     # Encode the variant ID properly
@@ -518,6 +529,7 @@ if (user_input != st.session_state.last_input or user_input_ph != st.session_sta
         
         st.session_state.hgvs_val = f"hgvs: {find_gene_name()}{find_mRNA()}, {find_prot()}"
         paper_count = get_pmids(st.session_state.GeneBe_results[4])
+        get_and_dump_pubmed_papers()
         
         find_gene_match(st.session_state.GeneBe_results[2], 'HGNC:'+str(st.session_state.GeneBe_results[3]))
         user_input_1 = f"The following diseases were found to be linked to the gene in interest: {st.session_state.disease_classification_dict}. Explain these diseases in depth, announce if a disease has been refuted, no need to explain that disease.if no diseases found reply with: No linked diseases found "
@@ -546,6 +558,10 @@ if st.session_state.flag == True:
     st.write(f"{paper_count} Research papers were found related to the entered variant.")
     if(st.session_state.last_input_ph == ""):
         st.write("Please enter a phenotype to further search these papers.")
+    else:
+        st.write(f"{len(st.session_state.papers)} relevant papers found.")
+        for paper in st.session_state.papers:
+            st.write(paper["title"])
     
     st.write("### AI Summary")
     st.markdown(

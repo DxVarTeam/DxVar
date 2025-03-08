@@ -86,7 +86,7 @@ if "selected_option" not in st.session_state:
 if "last_input" not in st.session_state:
     st.session_state.last_input = ""
 if "last_input_ph" not in st.session_state:
-    st.session_state_ph.last_input = ""
+    st.session_state_ph.last_input_ph = ""
 if "hgvs_val" not in st.session_state:
     st.session_state.hgvs_val = ""
 

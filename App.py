@@ -18,6 +18,8 @@ eutils_api_key = st.secrets["eutils_api_key"]
 client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 paper_count = 0
 chunk_size = 200
+output_filepath = "paper.jsonl"
+temp_filepath = "temp_chunk.jsonl"  # Temporary file for each chunk
 
 
 im = Image.open("dxvaricon.ico")

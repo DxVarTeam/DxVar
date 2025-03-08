@@ -605,7 +605,7 @@ if st.session_state.flag == True:
         st.write(f"{paper_count} Research papers were found related to the entered variant.")
         st.write(f"{len(st.session_state.papers)} of them mention the phenotype: {st.session_state.last_input_ph}")
         papers_df = pd.DataFrame(st.session_state.papers)
-
+        papers_df.index = papers_df.index + 1
         display_columns = ['title', 'journal', 'date', 'doi']
         if all(col in papers_df.columns for col in display_columns):
             papers_df = papers_df[display_columns]

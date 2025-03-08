@@ -1,2 +1,3 @@
 groq
 streamlit-arabic-support-wrapper
+paperscraper

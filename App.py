@@ -151,6 +151,7 @@ if language == "Arabic":
 def scrape_papers():
     # Clear the output file at the start
     open(output_filepath, "w").close()  
+    st.session_state.papers = []
 
     for i in range(0, len(st.session_state.pmids), chunk_size):
         chunk = st.session_state.pmids[i:i+chunk_size]
@@ -585,16 +586,15 @@ if st.session_state.flag == True:
     st.write("### Research Papers")
     st.write(f"")
     if(st.session_state.last_input_ph == ""):
-        st.success(f"{paper_count} Research papers were found related to the entered variant. Please enter a phenotype to further search these papers.")
+        st.write(f"{paper_count} Research papers were found related to the entered variant. Please enter a phenotype to further search these papers.")
     else:
-        st.success(f"{paper_count} Research papers were found related to the entered variant. {len(st.session_state.papers)} of them mention the phenotype: {st.session_state.last_input_ph}")
+        st.write(f"{paper_count} Research papers were found related to the entered variant.")
+        st.write(f"{len(st.session_state.papers)} of them mention the phenotype: {st.session_state.last_input_ph}")
         papers_df = pd.DataFrame(st.session_state.papers)
-    
-        # If the DataFrame has many columns, you might want to select specific ones
-        # For example:
-        # display_columns = ['title', 'authors', 'journal', 'publication_date', 'abstract', 'pmid']
-        # if all(col in papers_df.columns for col in display_columns):
-        #     papers_df = papers_df[display_columns]
+
+        display_columns = ['title', 'journal', 'date', 'doi']
+        if all(col in papers_df.columns for col in display_columns):
+            papers_df = papers_df[display_columns]
         
         # Display the DataFrame as a table
         st.subheader(f"{len(st.session_state.papers)} papers found")

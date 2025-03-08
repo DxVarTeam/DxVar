@@ -259,6 +259,8 @@ def draw_gene_match_table(gene_symbol, hgnc_id):
             sorted_table = sorted_table.drop(columns=['Classification Rank'])
             styled_table = sorted_table.style.apply(highlight_classification, axis=1)
             st.dataframe(styled_table, use_container_width=True, hide_index=True)  # hide_index=True removes row numbers
+        else:
+            st.error('No match found.')
 
 
 # Function to find matching gene symbol and HGNC ID from loaded dataset

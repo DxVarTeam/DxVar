@@ -152,7 +152,7 @@ def scrape_papers():
     open(output_filepath, "w").close()  
 
     for i in range(0, len(st.session_state.pmids), chunk_size):
-        chunk = pmids[i:i+chunk_size]
+        chunk = st.session_state.pmids[i:i+chunk_size]
         chunk_query = [chunk, [st.session_state.last_input_ph]]
         get_and_dump_pubmed_papers(chunk_query, output_filepath=temp_filepath)
 

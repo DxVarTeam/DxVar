@@ -569,10 +569,11 @@ if (user_input != st.session_state.last_input or user_input_ph != st.session_sta
         
         find_gene_match(st.session_state.GeneBe_results[2], 'HGNC:'+str(st.session_state.GeneBe_results[3]))
         user_input_1 = f"""The following diseases were found to be linked to the gene in interest: {st.session_state.disease_classification_dict}. 
-        Explain these diseases concisely, announce if a disease has been refuted, no need to explain that disease.if no diseases found reply with: No linked diseases found. 
+        Explain these diseases concisely, announce if a disease has been refuted, no need to explain that disease.if no diseases found reply with: No linked diseases found based on ClinGen Gene-Disease database. 
         The following papers were found to be linked with the requested variant the and phenotype in interest ({st.session_state.last_input_ph}): {filtered_papers}. 
         Analyse the abstracts of the papers and draw a conclusion on if the variant is likely to cause the mentioned disease (phenotype) or not.
-        Whenever providing conclusions mention which papers were used to draw those conclusions by referencing their doi"""
+        Whenever providing conclusions mention which papers were used to draw those conclusions by referencing their doi, but do not mention the papers within the text, just reference them using IEEE style like [1]
+        Then at the end of your reply write all the references with their doi separated by commas for example [1] 10.1186/s12920-024-02024-0, [2] 10.1038/s41598-019-50891-w ... and so on"""
         
         st.session_state.reply = get_assistant_response_1(user_input_1)
 

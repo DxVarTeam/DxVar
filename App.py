@@ -83,6 +83,8 @@ if "selected_option" not in st.session_state:
     st.session_state.selected_option = None
 if "last_input" not in st.session_state:
     st.session_state.last_input = ""
+if "last_input_ph" not in st.session_state:
+    st.session_state_ph.last_input = ""
 if "hgvs_val" not in st.session_state:
     st.session_state.hgvs_val = ""
 
@@ -387,12 +389,20 @@ if language == "English":
     user_input = st.text_input("Enter a genetic variant (ex: chr6:160585140-T>G or rs555607708):")
 else:
     user_input = st.text_input("أدخل متغيرًا جينيًا (مثال: chr6:160585140-T>G أو rs555607708):")
+
+
+if language == "English":
+    user_input_ph = st.text_input("Enter a phenotype:")
+else:
+    user_input_ph = st.text_input("أدخل النمط الظاهري:")
+
 option_box = ""
 
 
-if user_input != st.session_state.last_input or st.session_state.rs_val_flag == True:
+if (user_input != st.session_state.last_input or user_input_ph != st.session_state.last_input_ph) or st.session_state.rs_val_flag == True:
     # Get assistant's response
     st.session_state.last_input = user_input
+    st.session_state.last_input_ph = user_input_ph
     assistant_response = get_assistant_response_initial(user_input)
     
     if assistant_response.lower().startswith("rs"):

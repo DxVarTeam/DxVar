@@ -562,7 +562,7 @@ if st.session_state.flag == True:
     if(st.session_state.last_input_ph == ""):
         st.write("Please enter a phenotype to further search these papers.")
     else:
-        st.write(f"{len(st.session_state.papers)} relevant papers found.")
+        st.write(f"{len(st.session_state.papers)} of thm mention the phenotype:{st.session_state.last_input_ph}")
         for paper in st.session_state.papers:
             st.write(paper["title"])
     

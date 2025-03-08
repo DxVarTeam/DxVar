@@ -154,7 +154,7 @@ def get_pmids(rs_id):
     if response.status_code == 200:
         try:
             data = response.json()
-            st.session_state.pmids = data
+            st.session_state.pmids = data.get("pmids")
             return data.get("pmids_count")
         except ValueError:
             raise ValueError("Failed to parse JSON response from LitVar2 API")

@@ -541,7 +541,9 @@ if st.session_state.flag == True:
     st.write("### ClinGen Gene-Disease Results")
     draw_gene_match_table(st.session_state.GeneBe_results[2], 'HGNC:'+str(st.session_state.GeneBe_results[3]))
     st.write("### Research Papers")
-    st.write(f"{paper_count} Research papers were found relaated to the entered variant.")
+    st.write(f"{paper_count} Research papers were found related to the entered variant.")
+    if(st.session_state.last_input_ph == ""):
+        st.write("Please enter a phenotype to further search these papers.")
     
     st.write("### AI Summary")
     st.markdown(

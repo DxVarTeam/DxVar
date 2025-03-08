@@ -586,7 +586,8 @@ if st.session_state.flag == True:
     st.write("### Research Papers")
     st.write(f"")
     if(st.session_state.last_input_ph == ""):
-        st.write(f"{paper_count} Research papers were found related to the entered variant. Please enter a phenotype to further search these papers.")
+        st.write(f"{paper_count} Research papers were found related to the entered variant. ")
+        st.error("Please enter a phenotype to further search these papers.")
     else:
         st.write(f"{paper_count} Research papers were found related to the entered variant.")
         st.write(f"{len(st.session_state.papers)} of them mention the phenotype: {st.session_state.last_input_ph}")

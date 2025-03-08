@@ -598,7 +598,7 @@ if st.session_state.flag == True:
         
         # Display the DataFrame as a table
         st.subheader(f"{len(st.session_state.papers)} papers found")
-        st.dataframe(papers_df, use_container_width=True, hide_index=True
+        st.dataframe(papers_df, use_container_width=True, hide_index=True)
     
     st.write("### AI Summary")
     st.markdown(

@@ -10,6 +10,7 @@ import urllib.parse
 from paperscraper.pubmed import get_and_dump_pubmed_papers
 import json
 import os
+import copy
 
 
 parts = []

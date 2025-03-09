@@ -22,6 +22,8 @@ paper_count = 0
 chunk_size = 200
 output_filepath = "paper.jsonl"
 temp_filepath = "temp_chunk.jsonl"  # Temporary file for each chunk
+temp_ara = 0.5
+top_p_ara = 0.8
 
 
 im = Image.open("dxvaricon.ico")
@@ -57,6 +59,12 @@ st.session_state["language"] = language
 # Support Arabic text alignment in all components
 if language == "Arabic":
     support_arabic_text(all=True)
+    temp_val = temp_ara
+    top_p_val = top_p_ara
+else:
+    temp_val = 1
+    top_p_val = 1
+
 
 
 st.sidebar.markdown(
@@ -354,9 +362,9 @@ def get_assistant_response_initial(user_input):
     completion = client.chat.completions.create(
         model="llama-3.3-70b-versatile",
         messages=groq_messages,
-        temperature=1,
+        temperature=temp_val,
         max_completion_tokens=512,
-        top_p=1,
+        top_p=top_p_val,
         stream=False,
         stop=None,
     )
@@ -405,9 +413,9 @@ def get_assistant_response_1(user_input):
     completion = client.chat.completions.create(
         model="llama-3.3-70b-versatile",
         messages=full_message,
-        temperature=0.5,
+        temperature=temp_val,
         max_completion_tokens=1024,
-        top_p=0.8,
+        top_p=top_p_val,
         stream=False,
         stop=None,
     )
@@ -424,9 +432,9 @@ def get_assistant_response(chat_history):
     completion = client.chat.completions.create(
         model="llama-3.3-70b-versatile",
         messages=full_conversation,
-        temperature=0.5,
+        temperature=temp_val,
         max_completion_tokens=1024,
-        top_p=0.8,
+        top_p=top_p_val,
         stream=False,
         stop=None,
     )

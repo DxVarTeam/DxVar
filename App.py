@@ -586,10 +586,10 @@ if (user_input != st.session_state.last_input or user_input_ph != st.session_sta
 
         try:
             st.session_state.reply = get_assistant_response_1(user_input_1)
+            error_message = ""
         except Exception as e:
             error_message = str(e)
-            if "Error code: 413" in error_message:
-                st.error("LLM can not handle such a large request. We are working on it!")
+            
         
         
 
@@ -639,6 +639,8 @@ if st.session_state.flag == True:
                      """,
                      unsafe_allow_html=True,
                 )
+    if "Error code: 413" in error_message:
+        st.error("LLM can not handle such a large request. We are working on it!")
     
 
 

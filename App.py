@@ -583,8 +583,15 @@ if (user_input != st.session_state.last_input or user_input_ph != st.session_sta
         Whenever providing conclusions or insights, mention which papers were used to draw those conclusions by referencing them using IEEE style like [1].
         ensure this is done based on the order of the provided papers. Example if 8 papers were used and papers 2 and 5 were referenced write [2][5]
         No need to mention the references again at the end, and no need to mention their titles for referencing purposes"""
+
+        try:
+            st.session_state.reply = get_assistant_response_1(user_input_1)
+        except APIStatusError as e:
+            error_message = str(e)
+            if "Error code: 413" in error_message:
+                st.error("LLM can not handle such a large request. We are working on it!")
         
-        st.session_state.reply = get_assistant_response_1(user_input_1)
+        
 
 
 #display all results

@@ -107,6 +107,8 @@ if "hgvs_val" not in st.session_state:
     st.session_state.hgvs_val = ""
 if "papers" not in st.session_state:
     st.session_state.papers = []
+if "error_message" not in st.session_state:
+    st.session_state.error_message = None
 
 #read gene-disease-curation file
 file_url = 'https://github.com/DxVar/DxVar/blob/main/Clingen-Gene-Disease-Summary-2025-01-03.csv?raw=true'
@@ -587,9 +589,9 @@ if (user_input != st.session_state.last_input or user_input_ph != st.session_sta
 
         try:
             st.session_state.reply = get_assistant_response_1(user_input_1)
-            error_message = ""
+            st.session_state.error_message = None
         except Exception as e:
-            error_message = str(e)
+            st.session_state.error_message = str(e)
             
         
         
@@ -640,7 +642,7 @@ if st.session_state.flag == True:
                      """,
                      unsafe_allow_html=True,
                 )
-    if "Error code: 413" in error_message:
+    if "Error code: 413" in st.session_state.error_message:
         st.error("LLM can not handle such a large request. We are working on it!")
     
 

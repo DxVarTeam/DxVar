@@ -18,7 +18,7 @@ formatted_alleles =[]
 eutils_data = {}
 eutils_api_key = st.secrets["eutils_api_key"]
 client = Groq(api_key=st.secrets["GROQ_API_KEY"])
-paper_count = 0
+
 chunk_size = 200
 output_filepath = "paper.jsonl"
 temp_filepath = "temp_chunk.jsonl"  # Temporary file for each chunk
@@ -109,6 +109,8 @@ if "papers" not in st.session_state:
     st.session_state.papers = []
 if "error_message" not in st.session_state:
     st.session_state.error_message = None
+if "paper_count" not in st.session_state:
+    st.session_state.paper_count = 0
 
 #read gene-disease-curation file
 file_url = 'https://github.com/DxVar/DxVar/blob/main/Clingen-Gene-Disease-Summary-2025-01-03.csv?raw=true'
@@ -567,7 +569,7 @@ if (user_input != st.session_state.last_input or user_input_ph != st.session_sta
             snp_to_vcf(snp_id)
         
         st.session_state.hgvs_val = f"hgvs: {find_gene_name()}{find_mRNA()}, {find_prot()}"
-        paper_count = get_pmids(st.session_state.GeneBe_results[4])
+        st.session_state.paper_count = get_pmids(st.session_state.GeneBe_results[4])
         if(st.session_state.last_input_ph != ""):
             scrape_papers()
 
@@ -618,10 +620,10 @@ if st.session_state.flag == True:
     st.write("### Research Papers")
     st.write(f"")
     if(st.session_state.last_input_ph == ""):
-        st.write(f"{paper_count} Research papers were found related to the entered variant. ")
+        st.write(f"{st.session_state.paper_count} Research papers were found related to the entered variant. ")
         st.error("Please enter a phenotype to further search these papers.")
     else:
-        st.write(f"{paper_count} Research papers were found related to the entered variant.")
+        st.write(f"{st.session_state.paper_count} Research papers were found related to the entered variant.")
         st.write(f"{len(st.session_state.papers)} of them mention the phenotype: {st.session_state.last_input_ph}")
         papers_df = pd.DataFrame(st.session_state.papers)
         papers_df.index = papers_df.index + 1

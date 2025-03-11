@@ -642,7 +642,7 @@ if st.session_state.flag == True:
                      """,
                      unsafe_allow_html=True,
                 )
-    if "Error code: 413" in st.session_state.error_message:
+    if st.session_state.error_message and "Error code: 413" in st.session_state.error_message:
         st.error("LLM can not handle such a large request. We are working on it!")
     
 

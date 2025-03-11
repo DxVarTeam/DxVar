@@ -577,12 +577,13 @@ if (user_input != st.session_state.last_input or user_input_ph != st.session_sta
         
         find_gene_match(st.session_state.GeneBe_results[2], 'HGNC:'+str(st.session_state.GeneBe_results[3]))
         user_input_1 = f"""The following diseases were found to be linked to the gene in interest: {st.session_state.disease_classification_dict}. 
-        Briefly explain these diseases, announce if a disease has been refuted, no need to explain that disease.if no diseases found reply with: No linked diseases found based on the ClinGen Gene-Disease database. 
+        Explain these diseases, announce if a disease has been refuted, no need to explain that disease.if no diseases found reply with: No linked diseases found based on the ClinGen Gene-Disease database. 
         The following papers were found to be linked with the requested variant the and phenotype (disease) in interest ({st.session_state.last_input_ph}): {filtered_papers}. 
         Analyze the abstracts of the papers then explain and draw a conclusion on if the variant is likely to cause {st.session_state.last_input_ph} or not.
         Whenever providing conclusions or insights, mention which papers were used to draw those conclusions by referencing them using IEEE style like [1].
         ensure this is done based on the order of the provided papers. Example if 8 papers were used and papers 2 and 5 were referenced write [2][5]
-        No need to mention the references again at the end, and no need to mention their titles for referencing purposes"""
+        No need to mention the references again at the end, and no need to mention their titles for referencing purposes.
+        If no papers were provided, simple dont say anything regarding them."""
 
         try:
             st.session_state.reply = get_assistant_response_1(user_input_1)

@@ -577,6 +577,7 @@ if (user_input != st.session_state.last_input or user_input_ph != st.session_sta
 
     #drop authors as not needed for AI model 
     papers_copy = copy.deepcopy(st.session_state.papers)
+    papers_copy = papers_copy[:10] #process only 10 papers as LLM is token limited
     columns_to_remove = ["authors"]
     filtered_papers = [{k: v for k, v in paper.items() if k not in columns_to_remove} for paper in papers_copy]
 

@@ -564,36 +564,37 @@ if (user_input != st.session_state.last_input or user_input_ph != st.session_sta
                 st.session_state.InterVar_results = ['-','','-','']
                 pass
 
-        if (st.session_state.rs_flag == False):
-            snp_id = st.session_state.GeneBe_results[4]
-            snp_to_vcf(snp_id)
+    #if rs value not entered then retrieve hgvs from rs from ACMG
+    if (st.session_state.rs_flag == False):
+        snp_id = st.session_state.GeneBe_results[4]
+        snp_to_vcf(snp_id)
         
-        st.session_state.hgvs_val = f"hgvs: {find_gene_name()}{find_mRNA()}, {find_prot()}"
-        st.session_state.paper_count = get_pmids(st.session_state.GeneBe_results[4])
-        if(st.session_state.last_input_ph != ""):
-            scrape_papers()
+    st.session_state.hgvs_val = f"hgvs: {find_gene_name()}{find_mRNA()}, {find_prot()}"
+    st.session_state.paper_count = get_pmids(st.session_state.GeneBe_results[4])
+    if(st.session_state.last_input_ph != ""):
+        scrape_papers()
 
-        #drop authors as not needed for AI model 
-        papers_copy = copy.deepcopy(st.session_state.papers)
-        columns_to_remove = ["authors"]
-        filtered_papers = [{k: v for k, v in paper.items() if k not in columns_to_remove} for paper in papers_copy]
+    #drop authors as not needed for AI model 
+    papers_copy = copy.deepcopy(st.session_state.papers)
+    columns_to_remove = ["authors"]
+    filtered_papers = [{k: v for k, v in paper.items() if k not in columns_to_remove} for paper in papers_copy]
 
         
-        find_gene_match(st.session_state.GeneBe_results[2], 'HGNC:'+str(st.session_state.GeneBe_results[3]))
-        user_input_1 = f"""The following diseases were found to be linked to the gene in interest: {st.session_state.disease_classification_dict}. 
-        Explain these diseases, announce if a disease has been refuted, no need to explain that disease.if no diseases found reply with: No linked diseases found based on the ClinGen Gene-Disease database. 
-        The following papers were found to be linked with the requested variant the and phenotype (disease) in interest ({st.session_state.last_input_ph}): {filtered_papers}. 
-        Analyze the abstracts of the papers then explain and draw a conclusion on if the variant is likely to cause {st.session_state.last_input_ph} or not.
-        Whenever providing conclusions or insights, mention which papers were used to draw those conclusions by referencing them using IEEE style like [1].
-        ensure this is done based on the order of the provided papers. Example if 8 papers were used and papers 2 and 5 were referenced write [2][5]
-        No need to mention the references again at the end, and no need to mention their titles for referencing purposes.
-        If no papers were provided, simple dont say anything regarding them."""
+    find_gene_match(st.session_state.GeneBe_results[2], 'HGNC:'+str(st.session_state.GeneBe_results[3]))
+    user_input_1 = f"""The following diseases were found to be linked to the gene in interest: {st.session_state.disease_classification_dict}. 
+    Explain these diseases, announce if a disease has been refuted, no need to explain that disease.if no diseases found reply with: No linked diseases found based on the ClinGen Gene-Disease database. 
+    The following papers were found to be linked with the requested variant the and phenotype (disease) in interest ({st.session_state.last_input_ph}): {filtered_papers}. 
+    Analyze the abstracts of the papers then explain and draw a conclusion on if the variant is likely to cause {st.session_state.last_input_ph} or not.
+    Whenever providing conclusions or insights, mention which papers were used to draw those conclusions by referencing them using IEEE style like [1].
+    ensure this is done based on the order of the provided papers. Example if 8 papers were used and papers 2 and 5 were referenced write [2][5]
+    No need to mention the references again at the end, and no need to mention their titles for referencing purposes.
+    If no papers were provided, simple dont say anything regarding them."""
 
-        try:
-            st.session_state.reply = get_assistant_response_1(user_input_1)
-            st.session_state.error_message = None
-        except Exception as e:
-            st.session_state.error_message = str(e)
+    try:
+        st.session_state.reply = get_assistant_response_1(user_input_1)
+        st.session_state.error_message = None
+    except Exception as e:
+        st.session_state.error_message = str(e)
             
         
         

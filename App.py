@@ -568,8 +568,12 @@ if (user_input != st.session_state.last_input or user_input_ph != st.session_sta
     if (st.session_state.rs_flag == False):
         snp_id = st.session_state.GeneBe_results[4]
         snp_to_vcf(snp_id)
-        
-    st.session_state.hgvs_val = f"hgvs: {find_gene_name()}{find_mRNA()}, {find_prot()}"
+
+    try:
+        st.session_state.hgvs_val = f"hgvs: {find_gene_name()}{find_mRNA()}, {find_prot()}"
+    except Exception as e:
+        st.write(f"Error: {e}")
+
     st.session_state.paper_count = get_pmids(st.session_state.GeneBe_results[4])
     st.session_state.papers = []
     if(st.session_state.last_input_ph != ""):

@@ -572,6 +572,7 @@ if (user_input != st.session_state.last_input or user_input_ph != st.session_sta
     st.session_state.hgvs_val = f"hgvs: {find_gene_name()}{find_mRNA()}, {find_prot()}"
     st.session_state.paper_count = get_pmids(st.session_state.GeneBe_results[4])
     if(st.session_state.last_input_ph != ""):
+        st.session_state.papers = []
         scrape_papers()
 
     #drop authors as not needed for AI model 

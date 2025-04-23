@@ -716,21 +716,21 @@ if st.session_state.variant_count > 0:
     st.session_state.selected_variant_index = variant_options.index(selected_variant)
     
     # If there are multiple variants and a phenotype is provided, show ranking button
-    if st.session_state.variant_count > 1 and st.session_state.last_input_ph:
-        if st.button("Rank variants by pathogenicity for this phenotype"):
-            with st.spinner("Ranking variants..."):
-                all_variants_data_for_ranking = []
-                for i in range(st.session_state.variant_count):
-                    variant_info = {
-                        "GeneBe_results": st.session_state.GeneBe_results[i],
-                        "paper_count": st.session_state.paper_count[i]
-                    }
-                    all_variants_data_for_ranking.append(variant_info)
+    #if st.session_state.variant_count > 1 and st.session_state.last_input_ph:
+      #  if st.button("Rank variants by pathogenicity for this phenotype"):
+       #     with st.spinner("Ranking variants..."):
+               # all_variants_data_for_ranking = []
+               # for i in range(st.session_state.variant_count):
+                 #   variant_info = {
+                   #     "GeneBe_results": st.session_state.GeneBe_results[i],
+                     #   "paper_count": st.session_state.paper_count[i]
+                   # }
+                    #all_variants_data_for_ranking.append(variant_info)
                 
-                st.session_state.variant_ranking = get_variant_ranking(
-                    all_variants_data_for_ranking, 
-                    st.session_state.last_input_ph
-                )
+               # st.session_state.variant_ranking = get_variant_ranking(
+                #    all_variants_data_for_ranking, 
+                #    st.session_state.last_input_ph
+               # )
 
 
         # If there are multiple variants and a phenotype is provided, show overall summary button

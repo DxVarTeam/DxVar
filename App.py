@@ -731,7 +731,68 @@ if st.session_state.variant_count > 0:
                     all_variants_data_for_ranking, 
                     st.session_state.last_input_ph
                 )
-    
+
+
+        # If there are multiple variants and a phenotype is provided, show overall summary button
+    if st.session_state.variant_count > 0 and st.session_state.last_input_ph:
+        if st.button("Generate Overall AI Summary"):
+            with st.spinner("Analyzing all variants..."):
+                # Prepare comprehensive data for all variants
+                all_variants_summary = "I need a comprehensive analysis of the following variants in relation to the phenotype: " + st.session_state.last_input_ph + "\n\n"
+                
+                for i in range(st.session_state.variant_count):
+                    all_variants_summary += f"Variant {i+1}: {st.session_state.all_variants_formatted[i]}\n"
+                    all_variants_summary += f"GeneBe Results: {st.session_state.GeneBe_results[i]}\n"
+                    all_variants_summary += f"InterVar Results: {st.session_state.InterVar_results[i]}\n"
+                    
+                    # Add gene-disease relationship from ClinGen
+                    gene_symbol = st.session_state.GeneBe_results[i][2]
+                    hgnc_id = 'HGNC:'+str(st.session_state.GeneBe_results[i][3])
+                    disease_dict = find_gene_match(gene_symbol, hgnc_id)
+                    all_variants_summary += f"ClinGen Gene-Disease relationships: {disease_dict}\n"
+                    
+                    # Add paper information (limited to 3 per variant)
+                    if i < len(st.session_state.variant_papers) and st.session_state.variant_papers[i]:
+                        papers_for_variant = st.session_state.variant_papers[i][:3]  # Limit to 3 papers per variant
+                        
+                        # Extract only essential paper info to reduce token count
+                        simplified_papers = []
+                        for paper in papers_for_variant:
+                            simplified_paper = {
+                                "title": paper.get("title", ""),
+                                "abstract": paper.get("abstract", ""),
+                                "doi": paper.get("doi", "")
+                            }
+                            simplified_papers.append(simplified_paper)
+                        
+                        all_variants_summary += f"Related Papers (top 3): {simplified_papers}\n"
+                    all_variants_summary += "\n---\n\n"
+                
+                # Add request for ranking and analysis
+                all_variants_summary += f"\nBased on all the data above for each variant, please:\n"
+                all_variants_summary += f"1. Rank the variants from most to least likely to cause the phenotype '{st.session_state.last_input_ph}'.\n"
+                all_variants_summary += f"2. Explain your reasoning for each variant, considering ACMG classification, ClinGen gene-disease relationships, and evidence from the papers.\n"
+                all_variants_summary += f"3. Provide an overall conclusion about which variant(s) most likely explain the phenotype.\n"
+                
+                try:
+                    overall_summary = get_assistant_response_1(all_variants_summary)
+                    st.write("### Overall AI Summary")
+                    st.markdown(
+                        f"""
+                        <div class="justified-text">
+                               {overall_summary}
+                         </div>
+                         """,
+                         unsafe_allow_html=True,
+                    )
+                except Exception as e:
+                    if "Error code: 413" in str(e):
+                        st.error("The request is too large for the LLM to process. Try analyzing fewer variants or papers.")
+                    else:
+                        st.error(f"Error generating summary: {e}")
+
+
+
     # Display the ranking if available
     if st.session_state.variant_ranking:
         st.write("### Variant Ranking")

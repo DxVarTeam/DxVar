@@ -637,6 +637,8 @@ if (user_input != st.session_state.last_input or user_input_ph != st.session_sta
     st.session_state.variant_papers = []
     st.session_state.variant_pmids = []
     st.session_state.all_variants_formatted = []
+    st.session_state.variant_ranking = ""
+    st.session_state.variant_options = []
     
     # Get assistant's response for variants
     assistant_response = get_assistant_response_initial(user_input)

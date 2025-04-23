@@ -20,7 +20,6 @@ eutils_api_key = st.secrets["eutils_api_key"]
 client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
 chunk_size = 200
-output_filepath = "paper.jsonl"
 temp_filepath = "temp_chunk.jsonl"  # Temporary file for each chunk
 temp_ara = 0.5
 top_p_ara = 0.8
@@ -66,7 +65,6 @@ else:
     top_p_val = 1
 
 
-
 st.sidebar.markdown(
     """
     **Disclaimer:** DxVar is intended for research purposes only and may contain inaccuracies. 
@@ -84,11 +82,11 @@ st.sidebar.markdown(
 
 #initialize session state variables
 if "GeneBe_results" not in st.session_state:
-    st.session_state.GeneBe_results = ['-','-','-','-','-','-','-','-']
+    st.session_state.GeneBe_results = []
 if "InterVar_results" not in st.session_state:
-    st.session_state.InterVar_results = ['-','','-','']
+    st.session_state.InterVar_results = []
 if "disease_classification_dict" not in st.session_state:
-    st.session_state.disease_classification_dict = {"No diseases found"}
+    st.session_state.disease_classification_dict = []
 if "flag" not in st.session_state:
     st.session_state.flag = False
 if "rs_val_flag" not in st.session_state:#if rs has multiple alleles
@@ -104,13 +102,27 @@ if "last_input" not in st.session_state:
 if "last_input_ph" not in st.session_state:
     st.session_state.last_input_ph = ""
 if "hgvs_val" not in st.session_state:
-    st.session_state.hgvs_val = ""
+    st.session_state.hgvs_val = []
 if "papers" not in st.session_state:
     st.session_state.papers = []
 if "error_message" not in st.session_state:
     st.session_state.error_message = None
 if "paper_count" not in st.session_state:
-    st.session_state.paper_count = 0
+    st.session_state.paper_count = []
+if "variant_count" not in st.session_state:
+    st.session_state.variant_count = 0
+if "variant_options" not in st.session_state:
+    st.session_state.variant_options = []
+if "variant_papers" not in st.session_state:
+    st.session_state.variant_papers = []
+if "variant_pmids" not in st.session_state:
+    st.session_state.variant_pmids = []
+if "selected_variant_index" not in st.session_state:
+    st.session_state.selected_variant_index = 0
+if "variant_ranking" not in st.session_state:
+    st.session_state.variant_ranking = ""
+if "all_variants_formatted" not in st.session_state:
+    st.session_state.all_variants_formatted = []
 
 #read gene-disease-curation file
 file_url = 'https://github.com/DxVar/DxVar/blob/main/Clingen-Gene-Disease-Summary-2025-01-03.csv?raw=true'
@@ -123,26 +135,30 @@ initial_messages = [
         "content": (
             "You are a clinician assistant chatbot specializing in genomic research and variant analysis. "
             "Your task is to interpret user-provided genetic variant data, identify possible Mendelian diseases linked to genes, "
-            "and provide concise responses. If the user enters variants, you are to respond in a CSV format as such: "
-            "chromosome,position,ref base,alt base,and if no genome is provided, assume hg38. Example: "
-            "User input: chr6:160585140-T>G. You respond: 6,160585140,T,G,hg38. This response should be standalone with no extra texts. "
-            "Only 1 variant can be entered, if multiple are entered, remind the user to only enter 1."
-            "Remember bases can be multiple letters (e.g., chr6:160585140-T>GG). If the user has additional requests with the message "
-            "including the variant (e.g., 'tell me about diseases linked with the variant: chr6:160585140-T>G'), "
+            "and provide concise responses. The user may enter multiple variants at once, up to a maximum of 10 variants. "
+            "For each variant, you will respond in a CSV format: "
+            "chromosome,position,ref base,alt base,genome. If no genome is provided, assume hg38. "
+            "For multiple variants, format your response as multiple lines, one variant per line."
+            "Example for single variant: User input: chr6:160585140-T>G. You respond: 6,160585140,T,G,hg38"
+            "Example for multiple variants: User input: chr6:160585140-T>G and chr3:12345678-A>C. "
+            "You respond: "
+            "6,160585140,T,G,hg38"
+            "3,12345678,A,C,hg38"
+            "Remember bases can be multiple letters (e.g., chr6:160585140-T>GG). "
             "Remember, ref bases can simply be deleted (no alt base) and therefore the alt base value can be left blank. Example:"
-            "User input: chr6:160585140-T>. You respond: 6,160585140,T,,hg38. since T was deleted and not replaced with anything"
-            "ask them to enter only the variant first. They can ask follow-up questions afterward. "
-            "The user can enter the variant in any format, but it should be the variant alone with no follow-up questions."
-            "If the user enters an rs value simply return the rs value, example:"
-            "User input: tell me about rs12345. You respond: rs12345"
-            "Always respond in the above format (ie: no space between the letters rs and the number. Example:)"
-            "User input: rs 5689. You respond: rs5689"
+            "User input: chr6:160585140-T>. You respond: 6,160585140,T,,hg38. since T was deleted and not replaced with anything."
+            "If the user enters rs values (e.g., rs12345), simply return the rs value on each line."
+            "Example: User input: rs12345 and rs67890. You respond: "
+            "rs12345"
+            "rs67890"
+            "Always respond in the above format (ie: no space between the letters rs and the number)."
             "rs values can be single digit. Example: rs3 is valid."
-            "if both rs and chromosome,position,ref base,alt base are given, give priority to the chromosome, position,ref base,alt base"
-            "and only return that, however if any info is missing from chromosome,position,ref base,alt base, just use rs value and return rs"
-            "Example: rs124234 chromosome:3, pos:13423. You reply: rs124234. since the ref base and alt base are missing"
+            "If both rs and chromosome,position,ref base,alt base are given for the same variant, give priority to the chromosome, position,ref base,alt base "
+            "and only return that, however if any info is missing from chromosome,position,ref base,alt base, just use rs value and return rs."
+            "Example: rs124234 chromosome:3, pos:13423. You reply: rs124234. since the ref base and alt base are missing."
             "Ensure that any rs value provided is valid; it must be in the format 'rs' followed by a positive integer greater than zero. "
             "If the rs value is invalid (e.g., 'rs' or 'rs0'), do not return a random rs id; instead, ask the user to provide a valid rs value."
+            "If the user provides more than 10 variants, only process the first 10 and inform the user that there is a 10 variant maximum."
         ),
     }
 ]
@@ -151,23 +167,20 @@ if language == "Arabic":
     initial_messages[0]["content"] += " Note: The user has selected the Arabic language, please reply and communicate in Arabic. using Arabic script only unless english is necessary such as for the variant you may write it in enlgish using english letters and numbers otherwise use arabic script only."
 
 
-
 #ALL FUNCTIONS
-#def scrape_papers():
- # pmid_query = [st.session_state.pmids, [st.session_state.last_input_ph]]  # Replace with your actual PMID
-  #output_filepath = "paper.jsonl"
-  #get_and_dump_pubmed_papers(pmid_query, output_filepath='papers.jsonl')
-  #with open('papers.jsonl', "r", encoding="utf-8") as file:
-   # for line in file:
-    #  st.session_state.papers.append(json.loads(line.strip()))  # Convert each line from JSONL format to a dictionary
-
-def scrape_papers():
+def scrape_papers_for_variant(variant_index, output_filepath=None):
+    """Scrape papers for a specific variant"""
+    if output_filepath is None:
+        output_filepath = f"papers_variant_{variant_index}.jsonl"
+    
     # Clear the output file at the start
     open(output_filepath, "w").close()  
-    st.session_state.papers = []
+    papers = []
 
-    for i in range(0, len(st.session_state.pmids), chunk_size):
-        chunk = st.session_state.pmids[i:i+chunk_size]
+    pmids = st.session_state.variant_pmids[variant_index]
+    
+    for i in range(0, len(pmids), chunk_size):
+        chunk = pmids[i:i+chunk_size]
         chunk_query = [chunk, [st.session_state.last_input_ph]]
         get_and_dump_pubmed_papers(chunk_query, output_filepath=temp_filepath)
 
@@ -175,13 +188,15 @@ def scrape_papers():
         with open(temp_filepath, "r", encoding="utf-8") as infile, open(output_filepath, "a", encoding="utf-8") as outfile:
             outfile.write(infile.read())
 
-        # Load into session state
+        # Load into array
         with open(temp_filepath, "r", encoding="utf-8") as file:
             for line in file:
-                st.session_state.papers.append(json.loads(line.strip()))
+                papers.append(json.loads(line.strip()))
 
     if os.path.exists(temp_filepath):
         os.remove(temp_filepath)
+    
+    return papers
 
 
 def get_pmids(rs_id):
@@ -195,13 +210,12 @@ def get_pmids(rs_id):
     if response.status_code == 200:
         try:
             data = response.json()
-            st.session_state.pmids = data.get("pmids")
-            return data.get("pmids_count")
+            return data.get("pmids"), data.get("pmids_count")
         except ValueError:
             raise ValueError("Failed to parse JSON response from LitVar2 API")
     else:
         print(f"Error: {response.status_code}")
-        return None
+        return None, 0
         
 
 #ensures all 5 values are present for API call
@@ -209,15 +223,12 @@ def get_variant_info(message):
     try:
         parts = message.split(',')
         if len(parts) == 5 and parts[1].isdigit():
-            st.session_state.flag = True
-            return parts
+            return True, parts
         else:
-            #st.write("Message does not match a variant format, please try again by entering a genetic variant.")
-            st.session_state.flag = False
-            return []
+            return False, []
     except Exception as e:
-        st.write(f"Error while parsing variant: {e}")
-        return []
+        print(f"Error while parsing variant: {e}")
+        return False, []
 
 
 #get format chrX:123-A>B
@@ -238,12 +249,12 @@ def convert_variant_format(variant: str) -> str:
         alt = alt if alt else ""  # Handle cases where alt is missing
         return f"{chrom},{position},{ref},{alt},hg38"
     else:
-        st.write(variant)
         raise ValueError("Invalid variant format")
 
-#API call to e-utils
-def snp_to_vcf(snp_value):
+#API call to e-utils for a specific variant
+def snp_to_vcf(snp_id):
     global eutils_data
+    formatted_alleles.clear()
     
     url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
     params = {
@@ -262,31 +273,38 @@ def snp_to_vcf(snp_value):
     
             for allele in filtered_data[1:]:
                 vcf_format = allele["allele"]["spdi"]
-                new_format = convert_format(vcf_format["seq_id"],vcf_format["position"]+1,vcf_format["deleted_sequence"],vcf_format["inserted_sequence"] )
+                new_format = convert_format(vcf_format["seq_id"], vcf_format["position"]+1, vcf_format["deleted_sequence"], vcf_format["inserted_sequence"])
                 if new_format != "Invalid format":
                     formatted_alleles.append(new_format)
-    
+            return formatted_alleles
         except JSONDecodeError as E:
-            st.write ("Invalid rs value entered. Please try again.")
+            st.error("Invalid rs value entered. Please try again.")
+            return []
     else:
-        st.write(f"Error: {response.status_code}, {response.text}")
+        st.error(f"Error: {response.status_code}, {response.text}")
+        return []
 
 def find_mRNA():
     global eutils_data
     for placement in eutils_data["primary_snapshot_data"]["placements_with_allele"]:
       if "refseq_mrna" in placement["placement_annot"]["seq_type"]:
         return placement["alleles"][1]["hgvs"]
+    return ""
 
 def find_gene_name():
     global eutils_data
-    genes = eutils_data["primary_snapshot_data"]["allele_annotations"][0]["assembly_annotation"][0]["genes"][0]
-    return genes["locus"]
+    try:
+        genes = eutils_data["primary_snapshot_data"]["allele_annotations"][0]["assembly_annotation"][0]["genes"][0]
+        return genes["locus"]
+    except (KeyError, IndexError):
+        return ""
 
 def find_prot():
     global eutils_data
     for placement in eutils_data["primary_snapshot_data"]["placements_with_allele"]:
       if "refseq_prot" in placement["placement_annot"]["seq_type"]:
         return placement["alleles"][1]["hgvs"]
+    return ""
 
 # Function to draw table matching gene symbol and HGNC ID
 def draw_gene_match_table(gene_symbol, hgnc_id):
@@ -320,11 +338,11 @@ def find_gene_match(gene_symbol, hgnc_id):
     if 'GENE SYMBOL' in df.columns and 'GENE ID (HGNC)' in df.columns:
         matching_rows = df[(df['GENE SYMBOL'] == gene_symbol) & (df['GENE ID (HGNC)'] == hgnc_id)]
         if not matching_rows.empty:
-            st.session_state.disease_classification_dict = dict(zip(matching_rows['DISEASE LABEL'], matching_rows['CLASSIFICATION']))
+            return dict(zip(matching_rows['DISEASE LABEL'], matching_rows['CLASSIFICATION']))
         else:
-            st.session_state.disease_classification_dict = "No disease found"
+            return "No disease found"
     else:
-        st.write("No existing gene-disease match found")
+        return "No existing gene-disease match found"
 
 #colour profile for classifications
 def get_color(result):
@@ -357,7 +375,7 @@ def highlight_classification(row):
     return [color_map.get(classification, "")] * len(row)
 
 
-# Function to interact with Groq API for assistant responses for intial variant input
+# Function to interact with Groq API for assistant responses for initial variant input
 def get_assistant_response_initial(user_input):
     groq_messages = [{"role": "user", "content": user_input}]
     for message in initial_messages:
@@ -388,6 +406,21 @@ SYSTEM_1 = [
 if language == "Arabic":
     SYSTEM_1[0]["content"] += " Note: The user has selected the Arabic language, please reply and communicate in Arabic and with Arabic script/letters only unless instructed otherwise. Do not use chinese characters."
     
+# System message for variant ranking
+SYSTEM_RANKING = [
+    {
+        "role": "system",
+        "content": (
+            "You are a clinician assistant chatbot specializing in genomic research and variant analysis. "
+            "Your task is to rank multiple genetic variants by their pathogenicity based on the provided ACMG classifications "
+            "and research papers linking them to a specific phenotype. Rank them from 1 (most pathogenic) to N (least pathogenic)."
+            "Provide clear reasoning for your ranking based on the evidence available."
+        ),
+    }
+]
+
+if language == "Arabic":
+    SYSTEM_RANKING[0]["content"] += " Note: The user has selected the Arabic language, please reply and communicate in Arabic and with Arabic script/letters only unless instructed otherwise. Do not use chinese characters."
 
 # Initialize the conversation history
 SYSTEM = [
@@ -426,7 +459,35 @@ def get_assistant_response_1(user_input):
 
     assistant_reply = completion.choices[0].message.content
     return assistant_reply
+
+# Function to rank the variants by pathogenicity
+def get_variant_ranking(variants_info, phenotype):
+    # Construct message with all variants info
+    ranking_message = f"Please rank the following variants by their pathogenicity for the phenotype '{phenotype}':\n\n"
     
+    for i, variant in enumerate(variants_info):
+        formatted_variant = st.session_state.all_variants_formatted[i] if i < len(st.session_state.all_variants_formatted) else "Unknown format"
+        acmg = variant["GeneBe_results"][0] if i < len(variants_info) and len(variant["GeneBe_results"]) > 0 else "Not Available"
+        gene = variant["GeneBe_results"][2] if i < len(variants_info) and len(variant["GeneBe_results"]) > 2 else "Not Available"
+        ranking_message += f"Variant {i+1}: {formatted_variant}\n"
+        ranking_message += f"ACMG Classification: {acmg}\n"
+        ranking_message += f"Gene: {gene}\n"
+        if "paper_count" in variant and variant["paper_count"] is not None:
+            ranking_message += f"Related papers: {variant['paper_count']}\n"
+        ranking_message += "\n"
+    
+    full_message = SYSTEM_RANKING + [{"role": "user", "content": ranking_message}]
+    completion = client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=full_message,
+        temperature=temp_val,
+        max_completion_tokens=1024,
+        top_p=top_p_val,
+        stream=False,
+        stop=None,
+    )
+
+    return completion.choices[0].message.content    
 
 # Function to interact with Groq API for assistant response
 def get_assistant_response(chat_history):
@@ -446,6 +507,98 @@ def get_assistant_response(chat_history):
     assistant_reply = completion.choices[0].message.content
     return assistant_reply
 
+# Function to process a single variant
+def process_variant(variant_response, variant_index):
+    # Parse the variant
+    is_valid, parts = get_variant_info(variant_response)
+    
+    # Initialize results for this variant
+    variant_data = {
+        "GeneBe_results": ['-','-','-','-','-','-','-','-'],
+        "InterVar_results": ['-','','-',''],
+        "disease_classification_dict": {"No diseases found"},
+        "hgvs_val": "",
+        "paper_count": 0,
+        "papers": []
+    }
+    
+    if is_valid:
+        #ACMG - GENEBE API
+        url = "https://api.genebe.net/cloud/api-public/v1/variant"
+        params = {
+            "chr": parts[0],
+            "pos": parts[1],
+            "ref": parts[2],
+            "alt": parts[3],
+            "genome": parts[4]
+        }
+    
+        # Set the headers
+        headers = {
+            "Accept": "application/json"
+        }
+    
+        # Make API request
+        response = requests.get(url, headers=headers, params=params)
+        
+        if response.status_code == 200:
+            try:
+                data = response.json()
+                variant = data["variants"][0]  # Get the first variant
+                variant_data["GeneBe_results"][0] = variant.get("acmg_classification", "Not Available")
+                variant_data["GeneBe_results"][1] = variant.get("effect", "Not Available")
+                variant_data["GeneBe_results"][2] = variant.get("gene_symbol", "Not Available")
+                variant_data["GeneBe_results"][3] = variant.get("gene_hgnc_id", "Not Available")
+                variant_data["GeneBe_results"][4] = variant.get("dbsnp", "Not Available")
+                variant_data["GeneBe_results"][5] = variant.get("frequency_reference_population", "Not Available")
+                variant_data["GeneBe_results"][6] = variant.get("acmg_score", "Not Available")
+                variant_data["GeneBe_results"][7] = variant.get("acmg_criteria", "Not Available")
+            except JSONDecodeError as E:
+                pass
+                    
+        #INTERVAR API
+        url = "http://wintervar.wglab.org/api_new.php"
+        params = {
+            "queryType": "position",
+            "chr": parts[0],
+            "pos": parts[1],
+            "ref": parts[2],
+            "alt": parts[3],
+            "build": parts[4]
+        }
+
+        response = requests.get(url, params=params)
+            
+        if response.status_code == 200:
+            try:
+                results = response.json()
+                # Assuming the results contain ACMG classification and other details
+                variant_data["InterVar_results"][0] = results.get("Intervar", "Not Available")
+                variant_data["InterVar_results"][2] = results.get("Gene", "Not Available")
+            except JSONDecodeError as E:
+                pass
+                
+        # Get HGVS and RS information
+        snp_id = variant_data["GeneBe_results"][4]
+        if snp_id and snp_id != "Not Available":
+            try:
+                formatted_alleles_result = snp_to_vcf(snp_id)
+                if formatted_alleles_result:
+                    try:
+                        variant_data["hgvs_val"] = f"hgvs: {find_gene_name()}{find_mRNA()}, {find_prot()}"
+                    except Exception as e:
+                        variant_data["hgvs_val"] = f"Error finding HGVS: {e}"
+                    
+                    # Get PMIDs
+                    pmids, pmid_count = get_pmids(variant_data["GeneBe_results"][4])
+                    variant_data["paper_count"] = pmid_count
+                    
+                    return variant_data, pmids
+            except Exception as e:
+                print(f"Error processing SNP: {e}")
+    
+    return variant_data, None
+
 st.markdown(
     """
     <style>
@@ -462,202 +615,218 @@ st.markdown(
 
 # Main Streamlit interactions:
 if language == "English":
-    user_input = st.text_input("Enter a genetic variant (ex: chr6:160585140-T>G or rs555607708):")
+    user_input = st.text_area("Enter genetic variants (enter up to 10 variants, one per line):", height=150)
 else:
-    user_input = st.text_input("أدخل متغيرًا جينيًا (مثال: chr6:160585140-T>G أو rs555607708):")
-
+    user_input = st.text_area("أدخل المتغيرات الجينية (أدخل حتى 10 متغيرات، متغير واحد لكل سطر):", height=150)
 
 if language == "English":
     user_input_ph = st.text_input("Enter a phenotype:")
 else:
     user_input_ph = st.text_input("أدخل النمط الظاهري:")
 
-option_box = ""
-
-
-if (user_input != st.session_state.last_input or user_input_ph != st.session_state.last_input_ph) or st.session_state.rs_val_flag == True:
-    # Get assistant's response
+if (user_input != st.session_state.last_input or user_input_ph != st.session_state.last_input_ph):
+    # Reset data when input changes
     st.session_state.last_input = user_input
     st.session_state.last_input_ph = user_input_ph
+    st.session_state.GeneBe_results = []
+    st.session_state.InterVar_results = []
+    st.session_state.disease_classification_dict = []
+    st.session_state.hgvs_val = []
+    st.session_state.papers = []
+    st.session_state.paper_count = []
+    st.session_state.variant_papers = []
+    st.session_state.variant_pmids = []
+    st.session_state.all_variants_formatted = []
+    
+    # Get assistant's response for variants
     assistant_response = get_assistant_response_initial(user_input)
     
-    if assistant_response.lower().startswith("rs"):
-        st.session_state.rs_flag = True
-        snp_id = assistant_response.split()[0]
-        snp_to_vcf(snp_id)
-        if len(formatted_alleles) > 1:
-            st.session_state.rs_val_flag = True
-            option_box = st.selectbox("Your query results in several genomic alleles, please select one:", formatted_alleles)
-            assistant_response = convert_variant_format(option_box)
+    # Split response into lines for multiple variants
+    variant_responses = [line.strip() for line in assistant_response.split('\n') if line.strip()]
+    
+    # Limit to maximum 10 variants
+    variant_responses = variant_responses[:10]
+    st.session_state.variant_count = len(variant_responses)
+    
+    # Process each variant
+    all_variants_data = []
+    
+    for i, variant_response in enumerate(variant_responses):
+        # Keep track of the original formatted variants for display
+        st.session_state.all_variants_formatted.append(variant_response)
+        
+        # Handle rs values
+        if variant_response.lower().startswith("rs"):
+            snp_id = variant_response.split()[0]
+            formatted_alleles_result = snp_to_vcf(snp_id)
+            
+            if len(formatted_alleles_result) > 1:
+                # Store variant options for later selection
+                st.session_state.variant_options.append(formatted_alleles_result)
+                # For now, just process the first allele option but will allow selection later
+                variant_data, pmids = process_variant(convert_variant_format(formatted_alleles_result[0]), i)
+                if pmids:
+                    st.session_state.variant_pmids.append(pmids)
+                else:
+                    st.session_state.variant_pmids.append([])
+                all_variants_data.append(variant_data)
+            else:
+                # Single allele rs variant
+                if formatted_alleles_result:
+                    variant_data, pmids = process_variant(convert_variant_format(formatted_alleles_result[0]), i)
+                else:
+                    # Invalid or no alleles found
+                    variant_data, pmids = process_variant(variant_response, i)
+                
+                if pmids:
+                    st.session_state.variant_pmids.append(pmids)
+                else:
+                    st.session_state.variant_pmids.append([])
+                all_variants_data.append(variant_data)
         else:
-            st.session_state.rs_val_flag = False
-            if len(formatted_alleles) == 1:
-                assistant_response = convert_variant_format(formatted_alleles[0])
-    else:
-        st.session_state.rs_flag = False
+            # Direct genomic variant
+            variant_data, pmids = process_variant(variant_response, i)
+            if pmids:
+                st.session_state.variant_pmids.append(pmids)
+            else:
+                st.session_state.variant_pmids.append([])
+            all_variants_data.append(variant_data)
     
-    # Parse the variant if present
-    st.write(f"Assistant: {assistant_response}")
-    parts = get_variant_info(assistant_response)
-
-    if st.session_state.flag == True and (st.session_state.rs_val_flag == False or option_box != st.session_state.selected_option):
-        st.session_state.selected_option = option_box
-        #ACMG
-        #GENEBE API
-        # Define the API URL and parameters
-        url = "https://api.genebe.net/cloud/api-public/v1/variant"
-        params = {
-                "chr": parts[0],
-                "pos": parts[1],
-                "ref": parts[2],
-                "alt": parts[3],
-                "genome": parts[4]
-            }
+    # Store all variant data
+    st.session_state.GeneBe_results = [variant["GeneBe_results"] for variant in all_variants_data]
+    st.session_state.InterVar_results = [variant["InterVar_results"] for variant in all_variants_data]
+    st.session_state.disease_classification_dict = [variant["disease_classification_dict"] for variant in all_variants_data]
+    st.session_state.hgvs_val = [variant["hgvs_val"] for variant in all_variants_data]
+    st.session_state.paper_count = [variant["paper_count"] for variant in all_variants_data]
     
-        # Set the headers
-        headers = {
-                "Accept": "application/json"
-            }
+    # For the first variant, also scrape papers
+    if st.session_state.variant_count > 0 and len(st.session_state.variant_pmids) > 0:
+        st.session_state.variant_papers = []
+        for i in range(st.session_state.variant_count):
+            if len(st.session_state.variant_pmids[i]) > 0 and st.session_state.last_input_ph:
+                papers = scrape_papers_for_variant(i)
+                st.session_state.variant_papers.append(papers)
+            else:
+                st.session_state.variant_papers.append([])
+
+# Main interface for variant selection if multiple variants
+if st.session_state.variant_count > 0:
+    variant_options = [f"Variant {i+1}: {st.session_state.all_variants_formatted[i]}" for i in range(st.session_state.variant_count)]
+    selected_variant = st.selectbox("Select variant to view:", variant_options, index=st.session_state.selected_variant_index)
+    st.session_state.selected_variant_index = variant_options.index(selected_variant)
     
-            # Make API request
-        
-        response = requests.get(url, headers=headers, params=params)
-        
-        
-        if response.status_code == 200:
-            try:
-                data = response.json()
-                variant = data["variants"][0]  # Get the first variant
-                st.session_state.GeneBe_results[0] = variant.get("acmg_classification", "Not Available")
-                st.session_state.GeneBe_results[1] = variant.get("effect", "Not Available")
-                st.session_state.GeneBe_results[2] = variant.get("gene_symbol", "Not Available")
-                st.session_state.GeneBe_results[3] = variant.get("gene_hgnc_id", "Not Available")
-                st.session_state.GeneBe_results[4] = variant.get("dbsnp", "Not Available")
-                st.session_state.GeneBe_results[5] = variant.get("frequency_reference_population", "Not Available")
-                st.session_state.GeneBe_results[6] = variant.get("acmg_score", "Not Available")
-                st.session_state.GeneBe_results[7] = variant.get("acmg_criteria", "Not Available")
-            except JSONDecodeError as E:
-                pass
-                    
-        
-        #INTERVAR API
-        url = "http://wintervar.wglab.org/api_new.php"
-        params = {
-                "queryType": "position",
-                "chr": parts[0],
-                "pos": parts[1],
-                "ref": parts[2],
-                "alt": parts[3],
-                "build": parts[4]
-            }
-
-        
-        response = requests.get(url, params=params)
-            
-        if response.status_code == 200:
-            try:
-                results = response.json()
-                # Assuming the results contain ACMG classification and other details
-                st.session_state.InterVar_results[0] = results.get("Intervar", "Not Available")
-                st.session_state.InterVar_results[2] = results.get("Gene", "Not Available")
-            except JSONDecodeError as E:
-                st.session_state.InterVar_results = ['-','','-','']
-                pass
-
-    #if rs value not entered then retrieve hgvs from rs from ACMG
-    if (st.session_state.rs_flag == False):
-        snp_id = st.session_state.GeneBe_results[4]
-        snp_to_vcf(snp_id)
-
-    try:
-        st.session_state.hgvs_val = f"hgvs: {find_gene_name()}{find_mRNA()}, {find_prot()}"
-    except Exception as e:
-        st.write(f"Error: {e}")
-
-    st.session_state.paper_count = get_pmids(st.session_state.GeneBe_results[4])
-    st.session_state.papers = []
-    if(st.session_state.last_input_ph != ""):
-        scrape_papers()
-
-    #drop authors as not needed for AI model 
-    papers_copy = copy.deepcopy(st.session_state.papers)
-    papers_copy = papers_copy[:10] #process only 10 papers as LLM is token limited
-    columns_to_remove = ["authors"]
-    filtered_papers = [{k: v for k, v in paper.items() if k not in columns_to_remove} for paper in papers_copy]
-
-        
-    find_gene_match(st.session_state.GeneBe_results[2], 'HGNC:'+str(st.session_state.GeneBe_results[3]))
-    user_input_1 = f"""The following diseases were found to be linked to the gene in interest: {st.session_state.disease_classification_dict}. 
-    Explain these diseases, announce if a disease has been refuted, no need to explain that disease.if no diseases found reply with: No linked diseases found based on the ClinGen Gene-Disease database. 
-    The following papers were found to be linked with the requested variant the and phenotype (disease) in interest ({st.session_state.last_input_ph}): {filtered_papers}. 
-    Analyze the abstracts of the papers then explain and draw a conclusion on if the variant is likely to cause {st.session_state.last_input_ph} or not.
-    Whenever providing conclusions or insights, mention which papers were used to draw those conclusions by referencing them using IEEE style like [1].
-    ensure this is done based on the order of the provided papers. Example if 8 papers were used and papers 2 and 5 were referenced write [2][5]
-    No need to mention the references again at the end, and no need to mention their titles for referencing purposes.
-    If no papers were provided, simple dont say anything regarding them."""
-
-    try:
-        st.session_state.reply = get_assistant_response_1(user_input_1)
-        st.session_state.error_message = None
-    except Exception as e:
-        st.session_state.error_message = str(e)
-            
-        
-        
-
-
-#display all results
-if st.session_state.flag == True:
-    st.write(st.session_state.hgvs_val)
-    result_color = get_color(st.session_state.GeneBe_results[0])
-    st.markdown(f"### ACMG Results: <span style='color:{result_color}'>{st.session_state.GeneBe_results[0]}</span>", unsafe_allow_html=True)
-    data = {
-            "Attribute": ["Classification", "Effect", "Gene", "HGNC ID","dbsnp", "freq. ref. pop.", "acmg score", "acmg criteria"],
-            "GeneBe Results": [st.session_state.GeneBe_results[0], st.session_state.GeneBe_results[1], st.session_state.GeneBe_results[2], st.session_state.GeneBe_results[3], st.session_state.GeneBe_results[4], st.session_state.GeneBe_results[5], st.session_state.GeneBe_results[6], st.session_state.GeneBe_results[7]],
-            "InterVar Results": [st.session_state.InterVar_results[0], st.session_state.InterVar_results[1], st.session_state.InterVar_results[2], st.session_state.InterVar_results[3], '', '', '', ''],
-                        }
-    #display ACMG API results in table
-    acmg_results = pd.DataFrame(data)
-    acmg_results.set_index("Attribute", inplace=True)
-    st.dataframe(acmg_results, use_container_width=True)
-
-    #display gene-disease link results in table
-    st.write("### ClinGen Gene-Disease Results")
-    draw_gene_match_table(st.session_state.GeneBe_results[2], 'HGNC:'+str(st.session_state.GeneBe_results[3]))
-    st.write("### Research Papers")
-    st.write(f"")
-    if(st.session_state.last_input_ph == ""):
-        st.write(f"{st.session_state.paper_count} Research papers were found related to the entered variant. ")
-        st.error("Please enter a phenotype to further search these papers.")
-    else:
-        st.write(f"{st.session_state.paper_count} Research papers were found related to the entered variant.")
-        st.write(f"{len(st.session_state.papers)} of them mention the phenotype: {st.session_state.last_input_ph}")
-        papers_df = pd.DataFrame(st.session_state.papers)
-        papers_df.index = papers_df.index + 1
-        display_columns = ['title', 'journal', 'date', 'doi']
-        if all(col in papers_df.columns for col in display_columns):
-            papers_df = papers_df[display_columns]
-        
-        # Display the DataFrame as a table
-        #st.dataframe(papers_df, use_container_width=True, hide_index=True)
-        st.dataframe(papers_df, use_container_width=True)
-    
-    st.write("### AI Summary")
-    st.markdown(
-                    f"""
-                    <div class="justified-text">
-                           Assistant: {st.session_state.reply}
-                     </div>
-                     """,
-                     unsafe_allow_html=True,
+    # If there are multiple variants and a phenotype is provided, show ranking button
+    if st.session_state.variant_count > 1 and st.session_state.last_input_ph:
+        if st.button("Rank variants by pathogenicity for this phenotype"):
+            with st.spinner("Ranking variants..."):
+                all_variants_data_for_ranking = []
+                for i in range(st.session_state.variant_count):
+                    variant_info = {
+                        "GeneBe_results": st.session_state.GeneBe_results[i],
+                        "paper_count": st.session_state.paper_count[i]
+                    }
+                    all_variants_data_for_ranking.append(variant_info)
+                
+                st.session_state.variant_ranking = get_variant_ranking(
+                    all_variants_data_for_ranking, 
+                    st.session_state.last_input_ph
                 )
-    if st.session_state.error_message and "Error code: 413" in st.session_state.error_message:
-        st.error("LLM can not handle such a large request. We are working on it!")
     
+    # Display the ranking if available
+    if st.session_state.variant_ranking:
+        st.write("### Variant Ranking")
+        st.write(st.session_state.variant_ranking)
 
+# Display selected variant information
+if st.session_state.variant_count > 0:
+    idx = st.session_state.selected_variant_index
+    
+    # Display variant HGVS
+    if idx < len(st.session_state.hgvs_val):
+        st.write(st.session_state.hgvs_val[idx])
+    
+    # Display ACMG results
+    if idx < len(st.session_state.GeneBe_results):
+        result_color = get_color(st.session_state.GeneBe_results[idx][0])
+        st.markdown(f"### ACMG Results: <span style='color:{result_color}'>{st.session_state.GeneBe_results[idx][0]}</span>", unsafe_allow_html=True)
+        
+        data = {
+            "Attribute": ["Classification", "Effect", "Gene", "HGNC ID", "dbsnp", "freq. ref. pop.", "acmg score", "acmg criteria"],
+            "GeneBe Results": st.session_state.GeneBe_results[idx],
+            "InterVar Results": st.session_state.InterVar_results[idx] + ['', '', '', ''] if len(st.session_state.InterVar_results[idx]) < 8 else st.session_state.InterVar_results[idx]
+        }
+        
+        # Display ACMG API results in table
+        acmg_results = pd.DataFrame(data)
+        acmg_results.set_index("Attribute", inplace=True)
+        st.dataframe(acmg_results, use_container_width=True)
+        
+        # Display gene-disease link results in table
+        st.write("### ClinGen Gene-Disease Results")
+        draw_gene_match_table(st.session_state.GeneBe_results[idx][2], 'HGNC:'+str(st.session_state.GeneBe_results[idx][3]))
+        
+        # Display research papers
+        st.write("### Research Papers")
+        if st.session_state.last_input_ph == "":
+            if idx < len(st.session_state.paper_count):
+                st.write(f"{st.session_state.paper_count[idx]} Research papers were found related to this variant.")
+            st.error("Please enter a phenotype to further search these papers.")
+        else:
+            if idx < len(st.session_state.paper_count) and idx < len(st.session_state.variant_papers):
+                paper_count = st.session_state.paper_count[idx]
+                st.write(f"{paper_count} Research papers were found related to this variant.")
+                papers = st.session_state.variant_papers[idx]
+                st.write(f"{len(papers)} of them mention the phenotype: {st.session_state.last_input_ph}")
+                
+                if papers:
+                    papers_df = pd.DataFrame(papers)
+                    papers_df.index = papers_df.index + 1
+                    display_columns = ['title', 'journal', 'date', 'doi']
+                    if all(col in papers_df.columns for col in display_columns):
+                        papers_df = papers_df[display_columns]
+                    
+                    # Display the DataFrame as a table
+                    st.dataframe(papers_df, use_container_width=True)
+                    
+                    # Generate AI summary for this variant
+                    if st.button("Generate AI Summary for this variant"):
+                        with st.spinner("Analyzing papers..."):
+                            papers_copy = copy.deepcopy(papers)
+                            papers_copy = papers_copy[:10]  # Process only 10 papers as LLM is token limited
+                            columns_to_remove = ["authors"]
+                            filtered_papers = [{k: v for k, v in paper.items() if k not in columns_to_remove} for paper in papers_copy]
+                            
+                            gene_symbol = st.session_state.GeneBe_results[idx][2]
+                            hgnc_id = 'HGNC:'+str(st.session_state.GeneBe_results[idx][3])
+                            disease_dict = find_gene_match(gene_symbol, hgnc_id)
+                            
+                            user_input_1 = f"""The following diseases were found to be linked to the gene in interest: {disease_dict}. 
+                            Explain these diseases, announce if a disease has been refuted, no need to explain that disease.if no diseases found reply with: No linked diseases found based on the ClinGen Gene-Disease database. 
+                            The following papers were found to be linked with the requested variant the and phenotype (disease) in interest ({st.session_state.last_input_ph}): {filtered_papers}. 
+                            Analyze the abstracts of the papers then explain and draw a conclusion on if the variant is likely to cause {st.session_state.last_input_ph} or not.
+                            Whenever providing conclusions or insights, mention which papers were used to draw those conclusions by referencing them using IEEE style like [1].
+                            ensure this is done based on the order of the provided papers. Example if 8 papers were used and papers 2 and 5 were referenced write [2][5]
+                            No need to mention the references again at the end, and no need to mention their titles for referencing purposes.
+                            If no papers were provided, simple dont say anything regarding them."""
+                            
+                            try:
+                                ai_summary = get_assistant_response_1(user_input_1)
+                                st.write("### AI Summary")
+                                st.markdown(
+                                    f"""
+                                    <div class="justified-text">
+                                           {ai_summary}
+                                     </div>
+                                     """,
+                                     unsafe_allow_html=True,
+                                )
+                            except Exception as e:
+                                if "Error code: 413" in str(e):
+                                    st.error("LLM can not handle such a large request. We are working on it!")
+                                else:
+                                    st.error(f"Error generating summary: {e}")
 
-#Chatbot assistant
-
+# Chatbot assistant
 if "messages" not in st.session_state:
     st.session_state["messages"] = []
         
